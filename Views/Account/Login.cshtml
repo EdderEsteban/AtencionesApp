@@ -1,48 +1,61 @@
 @model AtencionesApp.Models.ViewModels.LoginViewModel
 
-  @{
-      ViewData["Title"] = "Iniciar Sesión";
-      Layout = null;
-  }
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = null;
+}
 
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>@ViewData["Title"]</title>
-      <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-  </head>
-  <body class="bg-light">
-      <div class="container d-flex justify-content-center align-items-center min-vh-100">
-          <div class="card shadow" style="width: 400px">
-              <div class="card-body p-4">
-                  <h4 class="card-title text-center mb-4">Atenciones de Salud</h4>
+<!DOCTYPE html>
+<html lang="es">
 
-                  @if (ViewBag.Error != null)
-                  {
-                      <div class="alert alert-danger">@ViewBag.Error</div>
-                  }
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
-                  <form asp-action="Login" method="post">
-                      <div class="mb-3">
-                          <label asp-for="Email" class="form-label">Email</label>
-                          <input asp-for="Email" class="form-control" />
-                          <span asp-validation-for="Email" class="text-danger small"></span>
-                      </div>
-                      <div class="mb-3">
-                          <label asp-for="Password" class="form-label">Contraseña</label>
-                          <input asp-for="Password" class="form-control" />
-                          <span asp-validation-for="Password" class="text-danger small"></span>
-                      </div>
-                      <div class="mb-3 form-check">
-                          <input asp-for="Recordarme" class="form-check-input" />
-                          <label asp-for="Recordarme" class="form-check-label">Recordarme</label>
-                      </div>
-                      <button type="submit" class="btn btn-primary w-100">Ingresar</button>
-                  </form>
-              </div>
-          </div>
-      </div>
-  </body>
-  </html>
+<body class="bg-light">
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="card shadow" style="width: 400px">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center mb-4">Atenciones de Salud</h4>
+
+                @if (ViewBag.Error != null)
+                {
+                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Error',
+                                                text: '@Html.Raw(ViewBag.Error)',
+                                                confirmButtonColor: '#0d6efd'
+                                            });
+                                        });
+                    </script>
+                }
+
+                <form asp-action="Login" method="post">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email" class="form-control" placeholder="" />
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Password" class="form-control" placeholder="" />
+                        <label asp-for="Password" class="form-label">Contraseña</label>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input asp-for="Recordarme" class="form-check-input" />
+                        <label asp-for="Recordarme" class="form-check-label">Recordarme</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
