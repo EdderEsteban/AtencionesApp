@@ -24,11 +24,6 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Rol>().HasData(
-            new Rol { Id = 1, Nombre = "Administrador", PuedeCrear = true, PuedeEditar = true, PuedeLeer = true, PuedeEliminar = true },
-            new Rol { Id = 2, Nombre = "Director", PuedeCrear = false, PuedeEditar = false, PuedeLeer = true, PuedeEliminar = false },
-            new Rol { Id = 3, Nombre = "Enfermero", PuedeCrear = true, PuedeEditar = true, PuedeLeer = true, PuedeEliminar = false },
-            new Rol { Id = 4, Nombre = "Odontólogo", PuedeCrear = true, PuedeEditar = true, PuedeLeer = true, PuedeEliminar = false }
-        );
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }
