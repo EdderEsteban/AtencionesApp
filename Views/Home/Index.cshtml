@@ -1,74 +1,76 @@
 ﻿@model AtencionesApp.Models.ViewModels.DashboardViewModel
-  @{
-      ViewData["Title"] = "Inicio";
-  }
+@{
+    ViewData["Title"] = "Inicio";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+}
 
-  <div id="dashboard-data" hidden
-       data-labels7="@System.Text.Json.JsonSerializer.Serialize(Model.Labels7Dias)"
-       data-serieenf="@System.Text.Json.JsonSerializer.Serialize(Model.SerieEnfermeria)"
-       data-serieodo="@System.Text.Json.JsonSerializer.Serialize(Model.SerieOdontologia)"
-       data-donutlbls="@System.Text.Json.JsonSerializer.Serialize(Model.DonutLabels)"
-       data-donutvals="@System.Text.Json.JsonSerializer.Serialize(Model.DonutValores)"
-       data-labels6m="@System.Text.Json.JsonSerializer.Serialize(Model.Labels6Meses)"
-       data-seriem="@System.Text.Json.JsonSerializer.Serialize(Model.SerieMensual)"
-       data-top10nom="@System.Text.Json.JsonSerializer.Serialize(Model.Top10Nombres)"
-       data-top10cant="@System.Text.Json.JsonSerializer.Serialize(Model.Top10Cantidades)">
-  </div>
+<div id="dashboard-data" hidden data-labels7="@System.Text.Json.JsonSerializer.Serialize(Model.Labels7Dias)"
+     data-serieenf="@System.Text.Json.JsonSerializer.Serialize(Model.SerieEnfermeria)"
+     data-serieodo="@System.Text.Json.JsonSerializer.Serialize(Model.SerieOdontologia)"
+     data-donutlbls="@System.Text.Json.JsonSerializer.Serialize(Model.DonutLabels)"
+     data-donutvals="@System.Text.Json.JsonSerializer.Serialize(Model.DonutValores)"
+     data-labels6m="@System.Text.Json.JsonSerializer.Serialize(Model.Labels6Meses)"
+     data-seriem="@System.Text.Json.JsonSerializer.Serialize(Model.SerieMensual)"
+     data-top10nom="@System.Text.Json.JsonSerializer.Serialize(Model.Top10Nombres)"
+     data-top10cant="@System.Text.Json.JsonSerializer.Serialize(Model.Top10Cantidades)">
+</div>
 
-  <div class="dashboard-header mb-4">
-      <h4 class="dashboard-title">Inicio</h4>
-      <p class="dashboard-sub">Resumen de actividad</p>
-  </div>
+<div class="dashboard-header mb-4">
+    <h4 class="dashboard-title">Inicio</h4>
+    <p class="dashboard-sub">Resumen de actividad</p>
+</div>
 
-  <div class="row g-4">
+<div class="row g-4">
 
-      <div class="col-lg-6">
-          <div class="card dashboard-card">
-              <div class="card-body">
-                  <p class="chart-title">@Model.TituloBarras</p>
-                  <div class="chart-container">
-                      <canvas id="chartBarras"></canvas>
-                  </div>
-              </div>
-          </div>
-      </div>
+    <div class="col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <p class="chart-title">@Model.TituloBarras</p>
+                <div class="chart-container">
+                    <canvas id="chartBarras"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      <div class="col-lg-6">
-          <div class="card dashboard-card">
-              <div class="card-body">
-                  <p class="chart-title">@Model.TituloDonut</p>
-                  <div class="chart-container">
-                      <canvas id="chartDonut"></canvas>
-                  </div>
-              </div>
-          </div>
-      </div>
+    <div class="col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <p class="chart-title">@Model.TituloDonut</p>
+                <div class="chart-container">
+                    <canvas id="chartDonut"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      <div class="col-lg-6">
-          <div class="card dashboard-card">
-              <div class="card-body">
-                  <p class="chart-title">@Model.TituloLinea</p>
-                  <div class="chart-container">
-                      <canvas id="chartLinea"></canvas>
-                  </div>
-              </div>
-          </div>
-      </div>
+    <div class="col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <p class="chart-title">@Model.TituloLinea</p>
+                <div class="chart-container">
+                    <canvas id="chartLinea"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      <div class="col-lg-6">
-          <div class="card dashboard-card">
-              <div class="card-body">
-                  <p class="chart-title">@Model.TituloTop10</p>
-                  <div class="chart-container chart-container-top10">
-                      <canvas id="chartTop10"></canvas>
-                  </div>
-              </div>
-          </div>
-      </div>
+    <div class="col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <p class="chart-title">@Model.TituloTop10</p>
+                <div class="chart-container chart-container-top10">
+                    <canvas id="chartTop10"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  </div>
+</div>
 
- @section Scripts {
-      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-      <script src="~/js/index.js"></script>
-  }
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="~/js/index.js"></script>
+}

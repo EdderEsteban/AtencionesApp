@@ -1,0 +1,108 @@
+@model IEnumerable<AtencionesApp.Models.Entities.Paciente>
+@{
+    ViewData["Title"] = "Pacientes";
+    var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+
+@if (TempData["Exito"] != null)
+{
+    <div id="alertaExito" data-mensaje="@TempData["Exito"]" hidden></div>
+}
+
+<div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="page-title">Pacientes</h4>
+            <p class="page-sub">Búsqueda por DNI, nombre o apellido</p>
+        </div>
+        @if (rol != "Director")
+        {
+            <a href="/Pacientes/Create" class="btn-primary-app">
+                <i class="bi bi-person-plus"></i> Nuevo paciente
+            </a>
+        }
+    </div>
+</div>
+
+<div class="search-bar mb-4">
+    <form method="get" action="/Pacientes">
+        <div class="search-input-wrap">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" name="q" value="@ViewBag.Busqueda" placeholder="Buscar por DNI, nombre o apellido..."
+                   class="search-input" autofocus />
+            <button type="submit" class="search-btn">Buscar</button>
+        </div>
+    </form>
+</div>
+
+@if (ViewBag.Busqueda != null && !Model.Any())
+{
+    <div class="empty-state">
+        <i class="bi bi-person-x"></i>
+        <p>No se encontraron pacientes para <strong>"@ViewBag.Busqueda"</strong></p>
+    </div>
+}
+else if (ViewBag.Busqueda == null)
+{
+    <div class="empty-state">
+        <i class="bi bi-search"></i>
+        <p>Ingresá un término para buscar pacientes</p>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <table class="table-app">
+            <thead>
+                <tr>
+                    <th>DNI</th>
+                    <th>Apellido y Nombre</th>
+                    <th>Fecha Nac.</th>
+                    <th>Sexo</th>
+                    <th>Obra Social</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td class="td-dni">@p.DNI</td>
+                        <td class="td-nombre">@p.Apellido, @p.Nombre</td>
+                        <td>@p.FechaNacimiento.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @(p.Sexo == "M" ? "Masculino" : p.Sexo == "F" ? "Femenino" : "No esp.")
+                        </td>
+                        <td>@(p.ObraSocial ?? "—")</td>
+                        <td class="td-actions">
+                            <a href="/Pacientes/Details/@p.Id" class="btn-table" title="Ver
+                                ficha">
+                                <i class="bi bi-folder2-open"></i>
+                            </a>
+                            @if (rol != "Director")
+                            {
+                                <a href="/Pacientes/Edit/@p.Id" class="btn-table" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            }
+                            @if (rol == "Administrador")
+                            {
+                                <form method="post" action="/Pacientes/Delete/@p.Id" class="d-inline" id="formDel-@p.Id">
+                                    @Html.AntiForgeryToken()
+                                    <button type="button" class="btn-table btn-table-danger" title="Eliminar" onclick="confirmarEliminar(@p.Id, '@p.Apellido,
+                                        @p.Nombre')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/pacientes.js"></script>
+}

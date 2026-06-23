@@ -1,0 +1,45 @@
+.dashboard-header {
+      border-bottom: 1px solid var(--navbar-border);
+      padding-bottom: 16px;
+  }
+
+  .dashboard-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--content-text);
+      margin: 0;
+  }
+
+  .dashboard-sub {
+      font-size: 0.8rem;
+      color: var(--content-text);
+      opacity: 0.5;
+      margin: 2px 0 0;
+  }
+
+  .dashboard-card {
+      border: 1px solid var(--navbar-border);
+      background: var(--navbar-bg);
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      height: 100%;
+  }
+
+  .chart-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--content-text);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.6;
+      margin-bottom: 16px;
+  }
+
+  .chart-container {
+      position: relative;
+      height: 220px;
+  }
+
+  .chart-container-top10 {
+      height: 260px;
+  }

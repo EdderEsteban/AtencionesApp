@@ -1,0 +1,95 @@
+@model AtencionesApp.Models.ViewModels.PacienteFormViewModel
+@{
+    ViewData["Title"] = "Nuevo Paciente";
+}
+
+<div class="page-header mb-4">
+    <a href="/Pacientes" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+    <h4 class="page-title mt-2">Nuevo Paciente</h4>
+</div>
+
+<div class="form-card">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="Apellido" class="form-control" placeholder=" " />
+                    <label asp-for="Apellido">Apellido</label>
+                    <span asp-validation-for="Apellido" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="Nombre" class="form-control" placeholder=" " />
+                    <label asp-for="Nombre">Nombre</label>
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <input asp-for="DNI" class="form-control" placeholder=" " />
+                    <label asp-for="DNI">DNI</label>
+                    <span asp-validation-for="DNI" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <input asp-for="FechaNacimiento" type="date" class="form-control" placeholder=" " />
+                    <label asp-for="FechaNacimiento">Fecha de Nacimiento</label>
+                    <span asp-validation-for="FechaNacimiento" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <select asp-for="Sexo" class="form-select">
+                        <option value="">— Seleccioná —</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                        <option value="NoEspecificado">No Especificado</option>
+                    </select>
+                    <label asp-for="Sexo">Sexo al Nacer</label>
+                    <span asp-validation-for="Sexo" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="Domicilio" class="form-control" placeholder=" " />
+                    <label asp-for="Domicilio">Domicilio (opcional)</label>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <input asp-for="Telefono" class="form-control" placeholder=" " />
+                    <label asp-for="Telefono">Teléfono (opcional)</label>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <input asp-for="ObraSocial" class="form-control" placeholder=" " />
+                    <label asp-for="ObraSocial">Obra Social (opcional)</label>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-actions mt-4">
+            <a href="/Pacientes" class="btn-cancel">Cancelar</a>
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-check-lg"></i> Guardar paciente
+            </button>
+        </div>
+
+    </form>
+</div>

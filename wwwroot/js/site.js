@@ -19,3 +19,20 @@ if (avatarEl) {
         : name.substring(0, 2);
     avatarEl.textContent = initials.toUpperCase();
 }
+
+// Manejo del menú lateral (sidebar)
+  const btnHamburger = document.getElementById('btnHamburger');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (btnHamburger) {
+      btnHamburger.addEventListener('click', () => {
+          sidebar.classList.toggle('sidebar-open');
+          overlay.classList.toggle('active');
+      });
+
+      overlay.addEventListener('click', () => {
+          sidebar.classList.remove('sidebar-open');
+          overlay.classList.remove('active');
+      });
+  }
