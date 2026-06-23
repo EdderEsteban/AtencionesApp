@@ -1,0 +1,92 @@
+@model AtencionesApp.Models.Entities.AtencionEnfermeria
+@{
+    ViewData["Title"] = "Detalle de Atención";
+    var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+
+<div class="page-header mb-4">
+    <a href="/AtencionesEnfermeria" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+    <div class="d-flex justify-content-between align-items-center mt-2">
+        <div>
+            <h4 class="page-title">Atención del @Model.Fecha.ToString("dd/MM/yyyy")</h4>
+            <p class="page-sub">@Model.Paciente.Apellido, @Model.Paciente.Nombre · DNI
+                @Model.Paciente.DNI</p>
+            </div>
+            @if (rol == "Administrador" || rol == "Enfermero")
+            {
+                <a href="/AtencionesEnfermeria/Edit/@Model.Id" class="btn-primary-app">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="form-card">
+                <p class="section-label">Datos de la atención</p>
+                <div class="dato-row">
+                    <span class="dato-label">Fecha</span>
+                    <span class="dato-valor">@Model.Fecha.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="dato-row">
+                    <span class="dato-label">Tipo</span>
+                    <span class="dato-valor">@(Model.TipoAtencion == 1 ? "Ambulatorio" :
+                                                  "Internado")</span>
+                    </div>
+                    <div class="dato-row">
+                        <span class="dato-label">Edad al momento</span>
+                        <span class="dato-valor">@Model.Edad años</span>
+                    </div>
+                    <div class="dato-row">
+                        <span class="dato-label">Embarazada</span>
+                        <span class="dato-valor">@(Model.Embarazada ? "Sí" : "No")</span>
+                    </div>
+                    <div class="dato-row">
+                        <span class="dato-label">Obra social</span>
+                        <span class="dato-valor">@(Model.SinObraSocial ? "Sin obra social" : "Con obra social")</span>
+                    </div>
+                    <div class="dato-row">
+                        <span class="dato-label">Registrado por</span>
+                        <span class="dato-valor">@Model.Usuario.Nombre @Model.Usuario.Apellido</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="form-card">
+                    <p class="section-label">Prestaciones (@Model.Prestaciones.Count)</p>
+                    @if (!Model.Prestaciones.Any())
+                    {
+                        <p class="text-muted small">Sin prestaciones registradas</p>
+                    }
+                    else
+                    {
+                        <table class="table-app">
+                            <thead>
+                                <tr>
+                                    <th>Grupo</th>
+                                    <th>Prestación</th>
+                                    <th>Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in Model.Prestaciones.OrderBy(p =>
+        p.TipoPrestacion.Grupo))
+                                {
+                                    <tr>
+                                        <td>@p.TipoPrestacion.Grupo</td>
+                                        <td>@p.TipoPrestacion.NombrePrestacion</td>
+                                        <td>@p.Cantidad</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+
+        </div>

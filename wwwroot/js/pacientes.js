@@ -1,13 +1,13 @@
 const alertaEl = document.getElementById('alertaExito');
-if (alertaEl) {
+if (alertaEl?.dataset.mensaje) {
     Swal.fire({
         icon: 'success',
-        title: 'Listo',
-        text: alertaEl.dataset.mensaje,
+        title: alertaEl.dataset.mensaje,
         timer: 3000,
         showConfirmButton: false,
         toast: true,
-        position: 'top-end'
+        position: 'top-end',
+        timerProgressBar: true
     });
 }
 

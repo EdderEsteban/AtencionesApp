@@ -1,0 +1,101 @@
+@model IEnumerable<AtencionesApp.Models.Entities.AtencionEnfermeria>
+@{
+    ViewData["Title"] = "Atenciones de Enfermería";
+    var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+
+<div id="alertaExito" data-mensaje="@TempData["Exito"]" hidden></div>
+
+<div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="page-title">Atenciones de Enfermería</h4>
+            <p class="page-sub">Registro diario de atenciones</p>
+        </div>
+        @if (rol == "Administrador" || rol == "Enfermero")
+        {
+            <a href="/AtencionesEnfermeria/Create" class="btn-primary-app">
+                <i class="bi bi-plus-lg"></i> Nueva atención
+            </a>
+        }
+    </div>
+</div>
+
+<form method="get" class="d-flex gap-2 mb-4 flex-wrap">
+    <div class="search-input-wrap">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" name="q" value="@ViewBag.Q" placeholder="Buscar por paciente o DNI..."
+               class="search-input" />
+    </div>
+    <input type="date" name="fecha" value="@ViewBag.Fecha" class="form-control" style="width:auto" />
+    <button type="submit" class="search-btn">Buscar</button>
+    @if (!string.IsNullOrEmpty(ViewBag.Q as string) || !string.IsNullOrEmpty(ViewBag.Fecha as
+string))
+    {
+        <a href="/AtencionesEnfermeria" class="btn-cancel">Limpiar</a>
+    }
+</form>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="bi bi-clipboard-heart"></i>
+        <p>No hay atenciones registradas</p>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <table class="table-app">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Paciente</th>
+                    <th>DNI</th>
+                    <th>Tipo</th>
+                    <th>Edad</th>
+                    <th>Registrado por</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td>@a.Paciente.Apellido, @a.Paciente.Nombre</td>
+                        <td class="td-dni">@a.Paciente.DNI</td>
+                        <td>@(a.TipoAtencion == 1 ? "Ambulatorio" : "Internado")</td>
+                        <td>@a.Edad años</td>
+                        <td>@a.Usuario.Nombre @a.Usuario.Apellido</td>
+                        <td class="td-actions">
+                            <a href="/AtencionesEnfermeria/Details/@a.Id" class="btn-table" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @if (rol == "Administrador" || rol == "Enfermero")
+                            {
+                                <a href="/AtencionesEnfermeria/Edit/@a.Id" class="btn-table" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            }
+                            @if (rol == "Administrador")
+                            {
+                                <button type="button" class="btn-table btn-table-danger" title="Eliminar"
+                                        onclick="confirmarEliminar(@a.Id, '@a.Paciente.Apellido, @a.Paciente.Nombre')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <form id="formDel-@a.Id" action="/AtencionesEnfermeria/Delete/@a.Id" method="post" hidden>
+                                    @Html.AntiForgeryToken()
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/enfermeria.js"></script>
+}

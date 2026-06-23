@@ -1,125 +1,183 @@
 @model AtencionesApp.Models.Entities.Paciente
+@using AtencionesApp.Models.Entities
 @{
     ViewData["Title"] = $"Ficha — {Model.Apellido}, {Model.Nombre}";
     var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+    var iniciales = (Model.Apellido.Length > 0 ? Model.Apellido[0].ToString() : "") +
+                    (Model.Nombre.Length > 0 ? Model.Nombre[0].ToString() : "");
+    var edadActual = DateTime.Today.Year - Model.FechaNacimiento.Year;
+    if (Model.FechaNacimiento.DayOfYear > DateTime.Today.DayOfYear) edadActual--;
+
+    var timeline = Model.AtencionesEnfermeria
+        .Select(a => (Fecha: a.Fecha, Tipo: "E", Enf: a, Odo: (AtencionOdontologia?)null))
+        .Concat(Model.AtencionesOdontologia
+            .Select(a => (Fecha: a.Fecha, Tipo: "O", Enf: (AtencionEnfermeria?)null, Odo: a)))
+        .OrderByDescending(x => x.Fecha)
+        .ToList();
+
+    var ultimaValoracion = Model.AtencionesOdontologia
+        .Where(a => a.ValoracionDental != null)
+        .OrderByDescending(a => a.Fecha)
+        .Select(a => a.ValoracionDental)
+        .FirstOrDefault();
+
+    var ultimaFechaValoracion = Model.AtencionesOdontologia
+        .Where(a => a.ValoracionDental != null)
+        .OrderByDescending(a => a.Fecha)
+        .Select(a => a.Fecha)
+        .FirstOrDefault();
 }
 
-<div class="page-header mb-4">
-    <a href="/Pacientes" class="btn-back">
-        <i class="bi bi-arrow-left"></i> Volver
-    </a>
-    <div class="d-flex justify-content-between align-items-center mt-2">
-        <div>
-            <h4 class="page-title">@Model.Apellido, @Model.Nombre</h4>
-            <p class="page-sub">DNI @Model.DNI · @(Model.Sexo == "M" ? "Masculino" : Model.Sexo
-                  == "F" ? "Femenino" : "No Especificado") · Nacido el
-                @Model.FechaNacimiento.ToString("dd/MM/yyyy")</p>
-            </div>
+<div class="patient-header mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <div class="patient-avatar-lg">@iniciales.ToUpper()</div>
+        <div class="flex-grow-1">
+            <h3 class="patient-name mb-1">@Model.Apellido, @Model.Nombre</h3>
+            <p class="patient-info-row">
+                DNI: <strong>@Model.DNI</strong>
+                &nbsp;·&nbsp; Nac: <strong>@Model.FechaNacimiento.ToString("dd/MM/yyyy")</strong> (@edadActual años)
+                &nbsp;·&nbsp; Sexo: <strong>@(Model.Sexo == "M" ? "Masculino" : Model.Sexo == "F" ? "Femenino" : "No especificado")</strong>
+                @if (!string.IsNullOrEmpty(Model.ObraSocial))
+                {
+                    <span>&nbsp;·&nbsp; OS: <strong>@Model.ObraSocial</strong></span>
+                }
+                @if (!string.IsNullOrEmpty(Model.Telefono))
+                {
+                    <span>&nbsp;·&nbsp; Tel: <strong>@Model.Telefono</strong></span>
+                }
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            @if (rol == "Administrador" || rol == "Enfermero")
+            {
+                <a href="/AtencionesEnfermeria/Create?pacienteId=@Model.Id" class="btn-primary-app">
+                    + Nueva Atención
+                </a>
+            }
             @if (rol != "Director")
             {
-                <a href="/Pacientes/Edit/@Model.Id" class="btn-primary-app">
-                    <i class="bi bi-pencil"></i> Editar
+                <a href="/Pacientes/Edit/@Model.Id" class="btn-secondary-app">
+                    — Editar
                 </a>
             }
         </div>
     </div>
+</div>
 
-    <div class="row g-4">
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="form-card">
+            <p class="section-label">Historial de atenciones</p>
+            @if (!timeline.Any())
+            {
+                <p class="text-muted small">Sin atenciones registradas</p>
+            }
+            else
+            {
+                <div class="timeline">
+                    @foreach (var item in timeline)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-dot @(item.Tipo == "E" ? "dot-enf" : "dot-odo")"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <span class="timeline-fecha">@item.Fecha.ToString("dd/MM/yyyy")</span>
+                                    @if (item.Tipo == "E")
+                                    {
+                                        <span class="badge-tipo badge-enf">Enfermería</span>
+                                        <span class="timeline-meta">@(item.Enf!.TipoAtencion == 1 ? "Ambulatorio" : "Internado")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-tipo badge-odo">Odontología</span>
+                                        <span class="timeline-meta">@(item.Odo!.TipoConsulta == 1 ? "1ª vez" : "Ulterior") · @(item.Odo.TipoTurno == 1 ? "Ventanilla" : item.Odo.TipoTurno == 2 ? "Profesional" : item.Odo.TipoTurno == 3 ? "Demanda" : "Interdisc.")</span>
+                                    }
+                                </div>
+                                <div class="timeline-prest">
+                                    @if (item.Tipo == "E" && item.Enf!.Prestaciones.Any())
+                                    {
+                                        @string.Join(" · ", item.Enf.Prestaciones.Select(p => $"{p.TipoPrestacion.NombrePrestacion} (×{p.Cantidad})"))
+                                    }
+                                    else if (item.Tipo == "O")
+                                    {
+                                        if (item.Odo!.Diagnostico != null)
+                                        {
+                                            <span class="timeline-diag">@item.Odo.Diagnostico.Codigo — @item.Odo.Diagnostico.Descripcion</span>
+                                            <span> | </span>
+                                        }
+                                        @string.Join(" · ", item.Odo!.Prestaciones.Select(p => $"{p.TipoPrestacion.NombrePrestacion} (×{p.Cantidad})"))
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
 
-        <div class="col-md-4">
-            <div class="form-card">
-                <p class="section-label">Datos del paciente</p>
-                <div class="dato-row">
-                    <span class="dato-label">Domicilio</span>
-                    <span class="dato-valor">@(Model.Domicilio ?? "—")</span>
+    <div class="col-lg-5">
+        @if (rol == "Administrador" || rol == "Director" || rol == "Odontólogo")
+        {
+            <div class="form-card mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="section-label mb-0">Valoración Odontológica</p>
+                    @if (ultimaValoracion != null)
+                    {
+                        <span class="text-muted small">Última — @ultimaFechaValoracion.ToString("dd/MM/yyyy")</span>
+                    }
                 </div>
-                <div class="dato-row">
-                    <span class="dato-label">Teléfono</span>
-                    <span class="dato-valor">@(Model.Telefono ?? "—")</span>
+                @if (ultimaValoracion == null)
+                {
+                    <p class="text-muted small">Sin valoración registrada</p>
+                }
+                else
+                {
+                    <div class="cpo-grid mb-3">
+                        <div class="cpo-cell cpo-c">
+                            <div class="cpo-valor">@ultimaValoracion.CariesPerm</div>
+                            <div class="cpo-etiq">C perm.</div>
+                        </div>
+                        <div class="cpo-cell cpo-p">
+                            <div class="cpo-valor">@ultimaValoracion.PerdidosPerm</div>
+                            <div class="cpo-etiq">P perm.</div>
+                        </div>
+                        <div class="cpo-cell cpo-o">
+                            <div class="cpo-valor">@ultimaValoracion.ObturadosPerm</div>
+                            <div class="cpo-etiq">O perm.</div>
+                        </div>
+                        <div class="cpo-cell cpo-temp">
+                            <div class="cpo-valor">@ultimaValoracion.CariesTemp</div>
+                            <div class="cpo-etiq">c temp.</div>
+                        </div>
+                        <div class="cpo-cell cpo-temp">
+                            <div class="cpo-valor">@ultimaValoracion.ExtraccionTemp</div>
+                            <div class="cpo-etiq">e temp.</div>
+                        </div>
+                        <div class="cpo-cell cpo-temp">
+                            <div class="cpo-valor">@ultimaValoracion.ObturadosTemp</div>
+                            <div class="cpo-etiq">o temp.</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        <div class="form-card">
+            <p class="section-label">Resumen</p>
+            <div class="resumen-stats">
+                <div class="resumen-stat">
+                    <div class="resumen-num">@(Model.AtencionesEnfermeria.Count + Model.AtencionesOdontologia.Count)</div>
+                    <div class="resumen-etiq">Total atenciones</div>
                 </div>
-                <div class="dato-row">
-                    <span class="dato-label">Obra Social</span>
-                    <span class="dato-valor">@(Model.ObraSocial ?? "Sin obra social")</span>
+                <div class="resumen-stat">
+                    <div class="resumen-num resumen-odo">@Model.AtencionesOdontologia.Count</div>
+                    <div class="resumen-etiq">Odontología</div>
+                </div>
+                <div class="resumen-stat">
+                    <div class="resumen-num resumen-enf">@Model.AtencionesEnfermeria.Count</div>
+                    <div class="resumen-etiq">Enfermería</div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-8">
-
-            <div class="form-card mb-4">
-                <p class="section-label">Atenciones de Enfermería
-                    (@Model.AtencionesEnfermeria.Count)</p>
-                    @if (!Model.AtencionesEnfermeria.Any())
-                    {
-                        <p class="text-muted small">Sin atenciones registradas</p>
-                    }
-                    else
-                    {
-                        <table class="table-app">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Edad</th>
-                                    <th>Prestaciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var a in Model.AtencionesEnfermeria.OrderByDescending(x =>
-        x.Fecha))
-                                {
-                                    <tr>
-                                        <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
-                                        <td>@(a.TipoAtencion == 1 ? "Ambulatorio" : "Internado")</td>
-                                        <td>@a.Edad años</td>
-                                        <td class="td-prestaciones">
-                                            @string.Join(", ", a.Prestaciones.Select(p =>
-        p.TipoPrestacion.NombrePrestacion))
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    }
-                </div>
-
-                <div class="form-card">
-                    <p class="section-label">Atenciones de Odontología
-                        (@Model.AtencionesOdontologia.Count)</p>
-                        @if (!Model.AtencionesOdontologia.Any())
-                        {
-                            <p class="text-muted small">Sin atenciones registradas</p>
-                        }
-                        else
-                        {
-                            <table class="table-app">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Consulta</th>
-                                        <th>Edad</th>
-                                        <th>Prestaciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var a in Model.AtencionesOdontologia.OrderByDescending(x =>
-            x.Fecha))
-                                    {
-                                        <tr>
-                                            <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
-                                            <td>@(a.TipoConsulta == 1 ? "1ª vez" : "Ulterior")</td>
-                                            <td>@a.Edad años</td>
-                                            <td class="td-prestaciones">
-                                                @string.Join(", ", a.Prestaciones.Select(p =>
-            p.TipoPrestacion.NombrePrestacion))
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        }
-                    </div>
-
-                </div>
-
-            </div>
+    </div>
+</div>

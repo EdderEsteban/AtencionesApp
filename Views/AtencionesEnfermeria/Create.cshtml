@@ -1,0 +1,119 @@
+@model AtencionesApp.Models.ViewModels.AtencionEnfermeriaFormViewModel
+@{
+    ViewData["Title"] = "Nueva Atención de Enfermería";
+    var tipos = ViewBag.Tipos as IEnumerable<AtencionesApp.Models.Entities.TipoPrestacionEnfermeria>;
+    var grupos = tipos?.GroupBy(t => t.Grupo) ?? Enumerable.Empty<IGrouping<string, AtencionesApp.Models.Entities.TipoPrestacionEnfermeria>>();
+}
+
+<div class="page-header mb-4">
+    <a href="/Pacientes/Details/@Model.PacienteId" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+    <h4 class="page-title mt-2">Nueva Atención — Enfermería</h4>
+    <p class="page-sub">@ViewBag.PacienteSubtitulo</p>
+</div>
+
+<form asp-action="Create" method="post" id="formAtencion">
+    @Html.AntiForgeryToken()
+    <input asp-for="PacienteId" type="hidden" />
+    <input asp-for="PacienteNombre" type="hidden" />
+    <input asp-for="PacienteFechaNacimiento" type="hidden" />
+
+    <div id="datosCalculo" hidden
+         data-fecha-nac="@Model.PacienteFechaNacimiento"
+         data-prestaciones-edit="[]">
+    </div>
+
+    <div class="row g-4">
+
+        <!-- COLUMNA IZQUIERDA: datos + resumen + botones -->
+        <div class="col-lg-7">
+            <div class="form-card mb-3">
+                <p class="section-label">Datos de la atención</p>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label-small">FECHA</label>
+                        <input asp-for="Fecha" type="date" class="form-control" id="inputFecha" />
+                        <span asp-validation-for="Fecha" class="text-danger small"></span>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label-small">TIPO DE ATENCIÓN</label>
+                        <select asp-for="TipoAtencion" class="form-select">
+                            <option value="">— Seleccioná —</option>
+                            <option value="1">Ambulatorio</option>
+                            <option value="2">Internado</option>
+                        </select>
+                        <span asp-validation-for="TipoAtencion" class="text-danger small"></span>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label-small">EDAD</label>
+                        <div class="edad-input-wrap">
+                            <input asp-for="Edad" type="number" class="form-control edad-input" readonly />
+                            <span class="edad-suffix">años</span>
+                        </div>
+                    </div>
+                    <div class="col-8 d-flex align-items-end gap-4 pb-1">
+                        <div class="form-check">
+                            <input asp-for="Embarazada" class="form-check-input" type="checkbox" />
+                            <label asp-for="Embarazada" class="form-check-label">Embarazada</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SinObraSocial" class="form-check-input" type="checkbox" />
+                            <label asp-for="SinObraSocial" class="form-check-label">Sin Obra Social</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card mb-3" id="resumenCard">
+                <p class="section-label">Resumen de prestaciones seleccionadas</p>
+                <div id="resumenLista">
+                    <p class="text-muted small" id="resumenVacio">Ninguna prestación seleccionada aún</p>
+                </div>
+                <div id="errorPrestaciones" class="text-danger small mt-1" hidden></div>
+            </div>
+
+            <div id="prestacionesHidden"></div>
+
+            <div class="form-actions-atencion">
+                <button type="submit" class="btn-guardar-atencion">
+                    <i class="bi bi-check-lg"></i> Guardar Atención
+                </button>
+                <a href="/Pacientes/Details/@Model.PacienteId" class="btn-cancelar-atencion">Cancelar</a>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: panel de prestaciones -->
+        <div class="col-lg-5">
+            <div class="prestaciones-panel">
+                <p class="section-label mb-3">Prestaciones de Enfermería</p>
+                @foreach (var grupo in grupos)
+                {
+                    <div class="grupo-section">
+                        <div class="grupo-titulo-prest">@grupo.Key</div>
+                        <div class="prestaciones-2col">
+                            @foreach (var tipo in grupo)
+                            {
+                                <div class="prestacion-item">
+                                    <label class="prestacion-label">
+                                        <input type="checkbox" class="prestacion-check" data-id="@tipo.Id" data-nombre="@tipo.NombrePrestacion" />
+                                        <span class="prestacion-nombre">@tipo.NombrePrestacion</span>
+                                    </label>
+                                    <input type="number" class="prestacion-cantidad" min="1" max="99" value="1" disabled />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/enfermeria.css" />
+}
+@section Scripts {
+    <script src="~/js/enfermeria.js"></script>
+}

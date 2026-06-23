@@ -658,6 +658,142 @@ body {
     margin-right: auto;
 }
 
+/* ── BADGES SEXO ── */
+.badge-sexo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 6px;
+    font-size: 0.75rem; font-weight: 600;
+}
+.badge-sexo-m { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.badge-sexo-f { background: rgba(236,72,153,0.15); color: #ec4899; }
+.badge-sexo-n { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+/* ── BOTONES DE ACCIÓN EN TABLA ── */
+.td-actions { display: flex; align-items: center; gap: 6px; }
+
+.btn-accion-outline {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px; border-radius: 6px;
+    font-size: 0.78rem; font-weight: 500; white-space: nowrap;
+    border: 1px solid var(--navbar-border);
+    background: transparent; color: var(--content-text);
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.btn-accion-outline:hover {
+    background: var(--sidebar-hover); color: var(--content-text);
+    border-color: var(--accent);
+}
+
+.btn-accion-verde {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px; border-radius: 6px;
+    font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+    background: #10b981; color: #fff;
+    border: none; text-decoration: none; cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-accion-verde:hover { background: #059669; color: #fff; }
+
+.btn-accion-verde-odo { background: #8b5cf6; }
+.btn-accion-verde-odo:hover { background: #7c3aed; color: #fff; }
+.btn-accion-disabled {
+    opacity: 0.4; pointer-events: none; cursor: default;
+}
+
+.btn-accion-danger {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 1px solid rgba(239,68,68,0.25);
+    background: transparent; color: rgba(239,68,68,0.7);
+    cursor: pointer; font-size: 0.82rem; flex-shrink: 0;
+    transition: all 0.15s;
+}
+.btn-accion-danger:hover {
+    background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #ef4444;
+}
+
+/* ── BTN SECONDARY ── */
+.btn-secondary-app {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px; font-size: 0.875rem;
+    font-weight: 500; text-decoration: none; transition: background 0.15s;
+    border: 1px solid var(--navbar-border); color: var(--content-text);
+    background: transparent;
+}
+.btn-secondary-app:hover { background: var(--sidebar-hover); color: var(--content-text); }
+
+/* ── PATIENT HEADER (Ficha) ── */
+.patient-avatar-lg {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 700; flex-shrink: 0;
+}
+.patient-name { font-size: 1.3rem; font-weight: 700; color: var(--content-text); margin: 0; }
+.patient-info-row { font-size: 0.82rem; color: var(--sidebar-text); margin: 0; }
+.patient-info-row strong { color: var(--content-text); }
+
+/* ── TIMELINE ── */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.timeline-item {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--navbar-border);
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-dot {
+    width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+}
+.dot-enf { background: #3b82f6; }
+.dot-odo { background: #8b5cf6; }
+.timeline-content { flex: 1; min-width: 0; }
+.timeline-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.timeline-fecha { font-size: 0.85rem; font-weight: 600; color: var(--content-text); }
+.badge-tipo {
+    font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+}
+.badge-enf { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.badge-odo { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+.timeline-meta { font-size: 0.75rem; color: var(--sidebar-text); }
+.timeline-prest { font-size: 0.78rem; color: var(--sidebar-text); line-height: 1.5; }
+.timeline-diag { font-weight: 500; color: var(--content-text); }
+
+/* ── CPO GRID ── */
+.cpo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.cpo-cell {
+    border-radius: 8px; padding: 10px 8px; text-align: center;
+}
+.cpo-c { background: rgba(59,130,246,0.12); }
+.cpo-p { background: rgba(239,68,68,0.12); }
+.cpo-o { background: rgba(16,185,129,0.12); }
+.cpo-temp { background: rgba(148,163,184,0.08); }
+.cpo-valor { font-size: 1.4rem; font-weight: 700; color: var(--content-text); }
+.cpo-etiq { font-size: 0.7rem; color: var(--sidebar-text); margin-top: 2px; }
+
+/* ── RESUMEN STATS ── */
+.resumen-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.resumen-stat { text-align: center; padding: 10px 4px; }
+.resumen-num { font-size: 1.6rem; font-weight: 700; color: var(--content-text); }
+.resumen-odo { color: #8b5cf6; }
+.resumen-enf { color: #3b82f6; }
+.resumen-etiq { font-size: 0.72rem; color: var(--sidebar-text); margin-top: 2px; }
+
+/* ── FORM LABEL SMALL ── */
+.form-label-small {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em;
+    color: var(--content-text); opacity: 0.55; text-transform: uppercase; margin-bottom: 6px; display: block;
+}
+
+/* ── EDAD INPUT ── */
+.edad-input-wrap { display: flex; align-items: center; gap: 8px; }
+.edad-input { width: 70px; text-align: center; }
+.edad-suffix { font-size: 0.75rem; color: var(--content-text); opacity: 0.5; white-space: nowrap; }
+
+/* ── TD FECHA ULT ── */
+.td-fecha-ult { font-size: 0.82rem; color: var(--sidebar-text); }
+
 /* ── RESPONSIVE MOBILE ── */
 @media (max-width: 768px) {
 

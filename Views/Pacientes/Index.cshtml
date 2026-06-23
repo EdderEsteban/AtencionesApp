@@ -2,38 +2,35 @@
 @{
     ViewData["Title"] = "Pacientes";
     var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+    var ultimas = ViewBag.UltimasAtenciones as Dictionary<int, DateTime?>;
 }
 
-@if (TempData["Exito"] != null)
-{
-    <div id="alertaExito" data-mensaje="@TempData["Exito"]" hidden></div>
-}
+<div id="alertaExito" data-mensaje="@TempData["Exito"]" hidden></div>
 
 <div class="page-header mb-4">
     <div class="d-flex justify-content-between align-items-center">
         <div>
             <h4 class="page-title">Pacientes</h4>
-            <p class="page-sub">Búsqueda por DNI, nombre o apellido</p>
+            <p class="page-sub">Busca por DNI, nombre o apellido</p>
         </div>
         @if (rol != "Director")
         {
             <a href="/Pacientes/Create" class="btn-primary-app">
-                <i class="bi bi-person-plus"></i> Nuevo paciente
+                <i class="bi bi-person-plus"></i> + Nuevo Paciente
             </a>
         }
     </div>
 </div>
 
-<div class="search-bar mb-4">
-    <form method="get" action="/Pacientes">
-        <div class="search-input-wrap">
-            <i class="bi bi-search search-icon"></i>
-            <input type="text" name="q" value="@ViewBag.Busqueda" placeholder="Buscar por DNI, nombre o apellido..."
-                   class="search-input" autofocus />
-            <button type="submit" class="search-btn">Buscar</button>
-        </div>
-    </form>
-</div>
+<form method="get" action="/Pacientes" class="d-flex gap-2 mb-4">
+    <div class="search-input-wrap flex-grow-1">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" name="q" value="@ViewBag.Busqueda"
+               placeholder="Buscar por DNI, nombre o apellido..."
+               class="search-input" autofocus />
+    </div>
+    <button type="submit" class="search-btn">Buscar</button>
+</form>
 
 @if (ViewBag.Busqueda != null && !Model.Any())
 {
@@ -60,39 +57,54 @@ else
                     <th>Fecha Nac.</th>
                     <th>Sexo</th>
                     <th>Obra Social</th>
-                    <th></th>
+                    <th>Últ. Atención</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var p in Model)
                 {
+                    var ultFecha = ultimas != null && ultimas.ContainsKey(p.Id) ? ultimas[p.Id] : null;
                     <tr>
                         <td class="td-dni">@p.DNI</td>
-                        <td class="td-nombre">@p.Apellido, @p.Nombre</td>
+                        <td class="td-nombre"><strong>@p.Apellido, @p.Nombre</strong></td>
                         <td>@p.FechaNacimiento.ToString("dd/MM/yyyy")</td>
                         <td>
-                            @(p.Sexo == "M" ? "Masculino" : p.Sexo == "F" ? "Femenino" : "No esp.")
+                            @if (p.Sexo == "M")
+                            {
+                                <span class="badge-sexo badge-sexo-m">M</span>
+                            }
+                            else if (p.Sexo == "F")
+                            {
+                                <span class="badge-sexo badge-sexo-f">F</span>
+                            }
+                            else
+                            {
+                                <span class="badge-sexo badge-sexo-n">—</span>
+                            }
                         </td>
                         <td>@(p.ObraSocial ?? "—")</td>
+                        <td class="td-fecha-ult">
+                            @(ultFecha.HasValue ? ultFecha.Value.ToString("dd/MM/yyyy") : "—")
+                        </td>
                         <td class="td-actions">
-                            <a href="/Pacientes/Details/@p.Id" class="btn-table" title="Ver
-                                ficha">
-                                <i class="bi bi-folder2-open"></i>
-                            </a>
-                            @if (rol != "Director")
+                            <a href="/Pacientes/Details/@p.Id" class="btn-accion-outline">Ver ficha</a>
+                            @if (rol == "Administrador" || rol == "Enfermero")
                             {
-                                <a href="/Pacientes/Edit/@p.Id" class="btn-table" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
+                                <a href="/AtencionesEnfermeria/Create?pacienteId=@p.Id" class="btn-accion-verde" title="Nueva atención de enfermería">+ Enf.</a>
+                            }
+                            @if (rol == "Administrador" || rol == "Odontólogo")
+                            {
+                                <a class="btn-accion-verde btn-accion-verde-odo btn-accion-disabled" title="Odontología — próximamente">+ Odo.</a>
                             }
                             @if (rol == "Administrador")
                             {
-                                <form method="post" action="/Pacientes/Delete/@p.Id" class="d-inline" id="formDel-@p.Id">
+                                <button type="button" class="btn-accion-danger" title="Eliminar"
+                                        onclick="confirmarEliminar(@p.Id, '@p.Apellido, @p.Nombre')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <form id="formDel-@p.Id" action="/Pacientes/Delete/@p.Id" method="post" hidden>
                                     @Html.AntiForgeryToken()
-                                    <button type="button" class="btn-table btn-table-danger" title="Eliminar" onclick="confirmarEliminar(@p.Id, '@p.Apellido,
-                                        @p.Nombre')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
                                 </form>
                             }
                         </td>

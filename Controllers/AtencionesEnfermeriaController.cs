@@ -1,0 +1,240 @@
+using AtencionesApp.Models.Data;
+  using AtencionesApp.Models.Entities;
+  using AtencionesApp.Models.ViewModels;
+  using Microsoft.AspNetCore.Authorization;
+  using Microsoft.AspNetCore.Mvc;
+  using Microsoft.EntityFrameworkCore;
+  using System.Security.Claims;
+
+  namespace AtencionesApp.Controllers;
+
+  [Authorize]
+  public class AtencionesEnfermeriaController : Controller
+  {
+      private readonly AppDbContext _db;
+
+      public AtencionesEnfermeriaController(AppDbContext db)
+      {
+          _db = db;
+      }
+
+      // GET /AtencionesEnfermeria
+      public async Task<IActionResult> Index(string? q, DateTime? fecha)
+      {
+          var query = _db.AtencionesEnfermeria
+              .Include(a => a.Paciente)
+              .Include(a => a.Usuario)
+              .AsQueryable();
+
+          var rol = User.FindFirstValue(ClaimTypes.Role);
+          if (rol == "Enfermero")
+          {
+              var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+              query = query.Where(a => a.UsuarioId == userId);
+          }
+
+          if (!string.IsNullOrWhiteSpace(q))
+              query = query.Where(a =>
+                  a.Paciente.Apellido.Contains(q) ||
+                  a.Paciente.Nombre.Contains(q) ||
+                  a.Paciente.DNI.Contains(q));
+
+          if (fecha.HasValue)
+              query = query.Where(a => a.Fecha.Date == fecha.Value.Date);
+
+          var atenciones = await query
+              .OrderByDescending(a => a.Fecha)
+              .Take(100)
+              .ToListAsync();
+
+          ViewBag.Q = q;
+          ViewBag.Fecha = fecha?.ToString("yyyy-MM-dd");
+          return View(atenciones);
+      }
+
+      // GET /AtencionesEnfermeria/Create?pacienteId=X
+      [Authorize(Roles = "Administrador,Enfermero")]
+      public async Task<IActionResult> Create(int? pacienteId)
+      {
+          if (!pacienteId.HasValue)
+              return RedirectToAction("Index", "Pacientes");
+
+          var paciente = await _db.Pacientes.FindAsync(pacienteId.Value);
+          if (paciente == null) return NotFound();
+
+          var vm = new AtencionEnfermeriaFormViewModel
+          {
+              Fecha = DateTime.Today,
+              PacienteId = paciente.Id,
+              PacienteNombre = $"{paciente.Apellido}, {paciente.Nombre}",
+              PacienteFechaNacimiento = paciente.FechaNacimiento.ToString("yyyy-MM-dd")
+          };
+
+          ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
+              .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
+              .ToListAsync();
+          ViewBag.PacienteSubtitulo = $"{paciente.Apellido}, {paciente.Nombre} · DNI {paciente.DNI}";
+          return View(vm);
+      }
+
+      // POST /AtencionesEnfermeria/Create
+      [HttpPost, ValidateAntiForgeryToken]
+      [Authorize(Roles = "Administrador,Enfermero")]
+      public async Task<IActionResult> Create(AtencionEnfermeriaFormViewModel vm)
+      {
+          if (vm.Prestaciones == null || !vm.Prestaciones.Any())
+              ModelState.AddModelError("Prestaciones", "Agregá al menos una prestación");
+
+          if (!ModelState.IsValid)
+          {
+              ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
+                  .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
+                  .ToListAsync();
+              return View(vm);
+          }
+
+          var paciente = await _db.Pacientes.FindAsync(vm.PacienteId);
+          var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+          var edad = vm.Fecha.Year - paciente!.FechaNacimiento.Year;
+          if (paciente.FechaNacimiento.DayOfYear > vm.Fecha.DayOfYear) edad--;
+
+          var atencion = new AtencionEnfermeria
+          {
+              Fecha = vm.Fecha,
+              PacienteId = vm.PacienteId,
+              InstitucionId = 1,   // TODO: institución activa de sesión
+              UsuarioId = userId,
+              TipoAtencion = vm.TipoAtencion,
+              Edad = edad,
+              Embarazada = vm.Embarazada,
+              SinObraSocial = vm.SinObraSocial,
+              Prestaciones = vm.Prestaciones.Select(p => new PrestacionEnfermeria
+              {
+                  TipoPrestacionId = p.TipoPrestacionId,
+                  Cantidad = p.Cantidad
+              }).ToList()
+          };
+
+          _db.AtencionesEnfermeria.Add(atencion);
+          await _db.SaveChangesAsync();
+
+          TempData["Exito"] = "Atención registrada correctamente";
+          return RedirectToAction(nameof(Index));
+      }
+
+      // GET /AtencionesEnfermeria/Edit/5
+      [Authorize(Roles = "Administrador,Enfermero")]
+      public async Task<IActionResult> Edit(int id)
+      {
+          var atencion = await _db.AtencionesEnfermeria
+              .Include(a => a.Prestaciones)
+              .Include(a => a.Paciente)
+              .FirstOrDefaultAsync(a => a.Id == id);
+
+          if (atencion == null) return NotFound();
+
+          var rol = User.FindFirstValue(ClaimTypes.Role);
+          var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+          if (rol == "Enfermero" && atencion.UsuarioId != userId)
+              return Forbid();
+
+          var vm = new AtencionEnfermeriaFormViewModel
+          {
+              Id = atencion.Id,
+              Fecha = atencion.Fecha,
+              PacienteId = atencion.PacienteId,
+              PacienteNombre = $"{atencion.Paciente.Apellido}, {atencion.Paciente.Nombre}",
+              TipoAtencion = atencion.TipoAtencion,
+              Embarazada = atencion.Embarazada,
+              SinObraSocial = atencion.SinObraSocial,
+              Edad = atencion.Edad,
+              PacienteFechaNacimiento = atencion.Paciente.FechaNacimiento.ToString("yyyy-MM-dd"),
+              Prestaciones = atencion.Prestaciones.Select(p => new PrestacionSeleccionadaVM
+              {
+                  TipoPrestacionId = p.TipoPrestacionId,
+                  Cantidad = p.Cantidad
+              }).ToList()
+          };
+
+          ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
+              .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
+              .ToListAsync();
+          return View(vm);
+      }
+
+      // POST /AtencionesEnfermeria/Edit/5
+      [HttpPost, ValidateAntiForgeryToken]
+      [Authorize(Roles = "Administrador,Enfermero")]
+      public async Task<IActionResult> Edit(int id, AtencionEnfermeriaFormViewModel vm)
+      {
+          if (vm.Prestaciones == null || !vm.Prestaciones.Any())
+              ModelState.AddModelError("Prestaciones", "Agregá al menos una prestación");
+
+          if (!ModelState.IsValid)
+          {
+              ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
+                  .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
+                  .ToListAsync();
+              return View(vm);
+          }
+
+          var atencion = await _db.AtencionesEnfermeria
+              .Include(a => a.Prestaciones)
+              .FirstOrDefaultAsync(a => a.Id == id);
+
+          if (atencion == null) return NotFound();
+
+          var rol = User.FindFirstValue(ClaimTypes.Role);
+          var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+          if (rol == "Enfermero" && atencion.UsuarioId != userId)
+              return Forbid();
+
+          var paciente = await _db.Pacientes.FindAsync(atencion.PacienteId);
+          var edad = vm.Fecha.Year - paciente!.FechaNacimiento.Year;
+          if (paciente.FechaNacimiento.DayOfYear > vm.Fecha.DayOfYear) edad--;
+
+          atencion.Fecha = vm.Fecha;
+          atencion.TipoAtencion = vm.TipoAtencion;
+          atencion.Embarazada = vm.Embarazada;
+          atencion.SinObraSocial = vm.SinObraSocial;
+          atencion.Edad = edad;
+
+          _db.PrestacionesEnfermeria.RemoveRange(atencion.Prestaciones);
+          atencion.Prestaciones = vm.Prestaciones.Select(p => new PrestacionEnfermeria
+          {
+              TipoPrestacionId = p.TipoPrestacionId,
+              Cantidad = p.Cantidad
+          }).ToList();
+
+          await _db.SaveChangesAsync();
+          TempData["Exito"] = "Atención actualizada correctamente";
+          return RedirectToAction(nameof(Index));
+      }
+
+      // GET /AtencionesEnfermeria/Details/5
+      public async Task<IActionResult> Details(int id)
+      {
+          var atencion = await _db.AtencionesEnfermeria
+              .Include(a => a.Paciente)
+              .Include(a => a.Usuario)
+              .Include(a => a.Prestaciones).ThenInclude(p => p.TipoPrestacion)
+              .FirstOrDefaultAsync(a => a.Id == id);
+
+          if (atencion == null) return NotFound();
+          return View(atencion);
+      }
+
+      // POST /AtencionesEnfermeria/Delete/5
+      [HttpPost, ValidateAntiForgeryToken]
+      [Authorize(Roles = "Administrador")]
+      public async Task<IActionResult> Delete(int id)
+      {
+          var atencion = await _db.AtencionesEnfermeria.FindAsync(id);
+          if (atencion == null) return NotFound();
+          atencion.IsDeleted = true;
+          await _db.SaveChangesAsync();
+          TempData["Exito"] = "Atención eliminada";
+          return RedirectToAction(nameof(Index));
+      }
+  }
