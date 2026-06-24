@@ -1,0 +1,141 @@
+@model AtencionesApp.Models.Entities.AtencionOdontologia
+@{
+    ViewData["Title"] = "Detalle de Atención";
+    var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+
+<div class="page-header mb-4">
+    <a href="/AtencionesOdontologia" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+    <div class="d-flex justify-content-between align-items-center mt-2">
+        <div>
+            <h4 class="page-title">Atención del @Model.Fecha.ToString("dd/MM/yyyy HH:mm")</h4>
+            <p class="page-sub">@Model.Paciente.Apellido, @Model.Paciente.Nombre · DNI @Model.Paciente.DNI</p>
+        </div>
+        @if (rol == "Administrador" || rol == "Odontólogo")
+        {
+            <a href="/AtencionesOdontologia/Edit/@Model.Id" class="btn-primary-app">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <div class="col-md-4">
+        <div class="form-card">
+            <p class="section-label">Datos de la atención</p>
+            <div class="dato-row">
+                <span class="dato-label">Fecha</span>
+                <span class="dato-valor">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+            <div class="dato-row">
+                <span class="dato-label">Consulta</span>
+                <span class="dato-valor">@(Model.TipoConsulta == 1 ? "1ª vez" : "Ulterior")</span>
+            </div>
+            <div class="dato-row">
+                <span class="dato-label">Turno</span>
+                <span class="dato-valor">
+                    @(Model.TipoTurno == 1 ? "Ventanilla" :
+                      Model.TipoTurno == 2 ? "Profesional" :
+                      Model.TipoTurno == 3 ? "Demanda espontánea" : "Interdisciplinario")
+                </span>
+            </div>
+            <div class="dato-row">
+                <span class="dato-label">Diagnóstico</span>
+                <span class="dato-valor">
+                    @(Model.Diagnostico != null ? $"{Model.Diagnostico.Codigo} — {Model.Diagnostico.Descripcion}" : "—")
+                </span>
+            </div>
+            <div class="dato-row">
+                <span class="dato-label">Edad al momento</span>
+                <span class="dato-valor">@Model.Edad años</span>
+            </div>
+            <div class="dato-row">
+                <span class="dato-label">Embarazada</span>
+                <span class="dato-valor">@(Model.Embarazada ? "Sí" : "No")</span>
+            </div>
+            <div class="dato-row">
+                <span class="dato-label">Obra social</span>
+                <span class="dato-valor">@(Model.SinObraSocial ? "No" : (Model.Paciente.ObraSocial ?? "Sí"))</span>
+            </div>
+            <div class="dato-row">
+                <span class="dato-label">Registrado por</span>
+                <span class="dato-valor">@Model.Usuario.Nombre @Model.Usuario.Apellido</span>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Observaciones))
+            {
+                <div class="dato-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                    <span class="dato-label">Observaciones</span>
+                    <span class="dato-valor" style="text-align: left;">@Model.Observaciones</span>
+                </div>
+            }
+        </div>
+
+        @if (Model.ValoracionDental != null)
+        {
+            <div class="form-card mt-4">
+                <p class="section-label">Valoración Dental (CPO)</p>
+                <div class="cpo-grid mb-2">
+                    <div class="cpo-cell cpo-c">
+                        <div class="cpo-valor">@Model.ValoracionDental.CariesPerm</div>
+                        <div class="cpo-etiq">C perm.</div>
+                    </div>
+                    <div class="cpo-cell cpo-p">
+                        <div class="cpo-valor">@Model.ValoracionDental.PerdidosPerm</div>
+                        <div class="cpo-etiq">P perm.</div>
+                    </div>
+                    <div class="cpo-cell cpo-o">
+                        <div class="cpo-valor">@Model.ValoracionDental.ObturadosPerm</div>
+                        <div class="cpo-etiq">O perm.</div>
+                    </div>
+                    <div class="cpo-cell cpo-temp">
+                        <div class="cpo-valor">@Model.ValoracionDental.CariesTemp</div>
+                        <div class="cpo-etiq">c temp.</div>
+                    </div>
+                    <div class="cpo-cell cpo-temp">
+                        <div class="cpo-valor">@Model.ValoracionDental.ExtraccionTemp</div>
+                        <div class="cpo-etiq">e temp.</div>
+                    </div>
+                    <div class="cpo-cell cpo-temp">
+                        <div class="cpo-valor">@Model.ValoracionDental.ObturadosTemp</div>
+                        <div class="cpo-etiq">o temp.</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-8">
+        <div class="form-card">
+            <p class="section-label">Prestaciones (@Model.Prestaciones.Count)</p>
+            @if (!Model.Prestaciones.Any())
+            {
+                <p class="text-muted small">Sin prestaciones registradas</p>
+            }
+            else
+            {
+                <table class="table-app">
+                    <thead>
+                        <tr>
+                            <th>Prestación</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Prestaciones.OrderBy(p => p.TipoPrestacion.NombrePrestacion))
+                        {
+                            <tr>
+                                <td>@p.TipoPrestacion.NombrePrestacion</td>
+                                <td>@p.Cantidad</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+</div>

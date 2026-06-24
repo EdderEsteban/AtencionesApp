@@ -35,7 +35,7 @@
                 <div class="row g-3">
                     <div class="col-6">
                         <label class="form-label-small">FECHA</label>
-                        <input asp-for="Fecha" type="date" class="form-control" id="inputFecha" />
+                        <input asp-for="Fecha" type="datetime-local" class="form-control" id="inputFecha" />
                         <span asp-validation-for="Fecha" class="text-danger small"></span>
                     </div>
                     <div class="col-6">
@@ -55,14 +55,39 @@
                         </div>
                     </div>
                     <div class="col-8 d-flex align-items-end gap-4 pb-1">
+                        @if (Model.PacienteSexo != "M")
+                        {
+                            <div class="form-check">
+                                <input asp-for="Embarazada" class="form-check-input" type="checkbox" />
+                                <label asp-for="Embarazada" class="form-check-label">Embarazada</label>
+                            </div>
+                        }
                         <div class="form-check">
-                            <input asp-for="Embarazada" class="form-check-input" type="checkbox" />
-                            <label asp-for="Embarazada" class="form-check-label">Embarazada</label>
-                        </div>
-                        <div class="form-check">
-                            <input asp-for="SinObraSocial" class="form-check-input" type="checkbox" />
+                            <input asp-for="SinObraSocial" class="form-check-input" type="checkbox"
+                                   disabled="@(Model.PacienteTieneObraSocial ? "disabled" : null)" />
                             <label asp-for="SinObraSocial" class="form-check-label">Sin Obra Social</label>
                         </div>
+                    </div>
+                    @if (Model.PacienteTieneObraSocial)
+                    {
+                        <div class="col-12">
+                            <span class="form-label-small">OBRA SOCIAL</span>
+                            <p style="color: var(--content-text); font-weight: 600; margin: 4px 0 0;">@Model.PacienteObraSocial</p>
+                        </div>
+                    }
+                    <div class="col-12" id="osInlineContainer"
+                         style="display: @(!Model.SinObraSocial && !Model.PacienteTieneObraSocial ? "block" : "none")">
+                        <label class="form-label-small">OBRA SOCIAL DEL PACIENTE</label>
+                        <input asp-for="NuevaObraSocial" type="text" class="form-control"
+                               id="NuevaObraSocial"
+                               placeholder="Ej: DOSEP, PAMI, OSDE..."
+                               maxlength="100" />
+                        <span class="form-text">Se guardará en el registro del paciente</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label-small">OBSERVACIONES</label>
+                        <textarea asp-for="Observaciones" class="form-control" rows="2"
+                                  placeholder="Opcional — anotaciones clínicas relevantes..." maxlength="500"></textarea>
                     </div>
                 </div>
             </div>

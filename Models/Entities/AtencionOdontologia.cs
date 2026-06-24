@@ -9,6 +9,7 @@ namespace AtencionesApp.Models.Entities;
       public int TipoTurno { get; set; }    // 1=Ventanilla, 2=Profesional, 3=Demanda, 4=Interdisc
       public bool Embarazada { get; set; }
       public bool SinObraSocial { get; set; }
+      public string? Observaciones { get; set; }
       public bool IsDeleted { get; set; }
 
       public int PacienteId { get; set; }

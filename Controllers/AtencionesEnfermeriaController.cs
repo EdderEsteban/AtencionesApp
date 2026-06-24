@@ -67,7 +67,11 @@ using AtencionesApp.Models.Data;
               Fecha = DateTime.Today,
               PacienteId = paciente.Id,
               PacienteNombre = $"{paciente.Apellido}, {paciente.Nombre}",
-              PacienteFechaNacimiento = paciente.FechaNacimiento.ToString("yyyy-MM-dd")
+              PacienteFechaNacimiento = paciente.FechaNacimiento.ToString("yyyy-MM-dd"),
+              PacienteSexo = paciente.Sexo,
+              PacienteTieneObraSocial = !string.IsNullOrEmpty(paciente.ObraSocial),
+              PacienteObraSocial = paciente.ObraSocial,
+              SinObraSocial = string.IsNullOrEmpty(paciente.ObraSocial)
           };
 
           ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
@@ -109,12 +113,18 @@ using AtencionesApp.Models.Data;
               Edad = edad,
               Embarazada = vm.Embarazada,
               SinObraSocial = vm.SinObraSocial,
+              Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim(),
               Prestaciones = vm.Prestaciones.Select(p => new PrestacionEnfermeria
               {
                   TipoPrestacionId = p.TipoPrestacionId,
                   Cantidad = p.Cantidad
               }).ToList()
           };
+
+          if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
+              paciente!.ObraSocial = vm.NuevaObraSocial.Trim();
+          else if (!vm.SinObraSocial && string.IsNullOrEmpty(paciente!.ObraSocial))
+              atencion.SinObraSocial = true;
 
           _db.AtencionesEnfermeria.Add(atencion);
           await _db.SaveChangesAsync();
@@ -148,6 +158,10 @@ using AtencionesApp.Models.Data;
               TipoAtencion = atencion.TipoAtencion,
               Embarazada = atencion.Embarazada,
               SinObraSocial = atencion.SinObraSocial,
+              Observaciones = atencion.Observaciones,
+              PacienteSexo = atencion.Paciente.Sexo,
+              PacienteTieneObraSocial = !string.IsNullOrEmpty(atencion.Paciente.ObraSocial),
+              PacienteObraSocial = atencion.Paciente.ObraSocial,
               Edad = atencion.Edad,
               PacienteFechaNacimiento = atencion.Paciente.FechaNacimiento.ToString("yyyy-MM-dd"),
               Prestaciones = atencion.Prestaciones.Select(p => new PrestacionSeleccionadaVM
@@ -198,7 +212,13 @@ using AtencionesApp.Models.Data;
           atencion.TipoAtencion = vm.TipoAtencion;
           atencion.Embarazada = vm.Embarazada;
           atencion.SinObraSocial = vm.SinObraSocial;
+          atencion.Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim();
           atencion.Edad = edad;
+
+          if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
+              paciente!.ObraSocial = vm.NuevaObraSocial.Trim();
+          else if (!vm.SinObraSocial && string.IsNullOrEmpty(paciente?.ObraSocial))
+              atencion.SinObraSocial = true;
 
           _db.PrestacionesEnfermeria.RemoveRange(atencion.Prestaciones);
           atencion.Prestaciones = vm.Prestaciones.Select(p => new PrestacionEnfermeria

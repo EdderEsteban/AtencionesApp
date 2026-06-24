@@ -9,10 +9,11 @@
     if (Model.FechaNacimiento.DayOfYear > DateTime.Today.DayOfYear) edadActual--;
 
     var timeline = Model.AtencionesEnfermeria
-        .Select(a => (Fecha: a.Fecha, Tipo: "E", Enf: a, Odo: (AtencionOdontologia?)null))
+        .Select(a => (Fecha: a.Fecha, Id: a.Id, Tipo: "E", Enf: a, Odo: (AtencionOdontologia?)null))
         .Concat(Model.AtencionesOdontologia
-            .Select(a => (Fecha: a.Fecha, Tipo: "O", Enf: (AtencionEnfermeria?)null, Odo: a)))
+            .Select(a => (Fecha: a.Fecha, Id: a.Id, Tipo: "O", Enf: (AtencionEnfermeria?)null, Odo: a)))
         .OrderByDescending(x => x.Fecha)
+        .ThenByDescending(x => x.Id)
         .ToList();
 
     var ultimaValoracion = Model.AtencionesOdontologia
@@ -51,7 +52,13 @@
             @if (rol == "Administrador" || rol == "Enfermero")
             {
                 <a href="/AtencionesEnfermeria/Create?pacienteId=@Model.Id" class="btn-primary-app">
-                    + Nueva Atención
+                    + Enf.
+                </a>
+            }
+            @if (rol == "Administrador" || rol == "Odontólogo")
+            {
+                <a href="/AtencionesOdontologia/Create?pacienteId=@Model.Id" class="btn-primary-app" style="background:#8b5cf6;">
+                    + Odo.
                 </a>
             }
             @if (rol != "Director")
@@ -81,7 +88,7 @@
                             <div class="timeline-dot @(item.Tipo == "E" ? "dot-enf" : "dot-odo")"></div>
                             <div class="timeline-content">
                                 <div class="timeline-header">
-                                    <span class="timeline-fecha">@item.Fecha.ToString("dd/MM/yyyy")</span>
+                                    <span class="timeline-fecha">@item.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
                                     @if (item.Tipo == "E")
                                     {
                                         <span class="badge-tipo badge-enf">Enfermería</span>
@@ -106,6 +113,23 @@
                                             <span> | </span>
                                         }
                                         @string.Join(" · ", item.Odo!.Prestaciones.Select(p => $"{p.TipoPrestacion.NombrePrestacion} (×{p.Cantidad})"))
+                                    }
+                                </div>
+                                @{
+                                    var obs = item.Tipo == "E" ? item.Enf!.Observaciones : item.Odo!.Observaciones;
+                                }
+                                @if (!string.IsNullOrEmpty(obs))
+                                {
+                                    <div class="timeline-obs">@obs</div>
+                                }
+                                <div class="timeline-footer">
+                                    @if (item.Tipo == "E")
+                                    {
+                                        <a href="/AtencionesEnfermeria/Details/@item.Enf!.Id" class="timeline-link">Ver detalle →</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/AtencionesOdontologia/Details/@item.Odo!.Id" class="timeline-link">Ver detalle →</a>
                                     }
                                 </div>
                             </div>

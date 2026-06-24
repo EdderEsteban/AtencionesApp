@@ -4,6 +4,7 @@ using AtencionesApp.Models.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AtencionesApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260624131128_AddObservaciones")]
+    partial class AddObservaciones
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,218 +153,6 @@ namespace AtencionesApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Diagnosticos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Codigo = "K02.0",
-                            Descripcion = "Caries limitada al esmalte",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Codigo = "K02.1",
-                            Descripcion = "Caries de la dentina",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Codigo = "K02.2",
-                            Descripcion = "Caries del cemento",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Codigo = "K02.3",
-                            Descripcion = "Caries dental detenida",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Codigo = "K02.9",
-                            Descripcion = "Caries dental, no especificada",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Codigo = "K04.0",
-                            Descripcion = "Pulpitis",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Codigo = "K04.1",
-                            Descripcion = "Necrosis de la pulpa",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Codigo = "K04.4",
-                            Descripcion = "Periodontitis apical aguda",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Codigo = "K04.5",
-                            Descripcion = "Periodontitis apical crónica",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Codigo = "K04.6",
-                            Descripcion = "Absceso periapical con fístula",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Codigo = "K04.7",
-                            Descripcion = "Absceso periapical sin fístula",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Codigo = "K05.0",
-                            Descripcion = "Gingivitis aguda",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Codigo = "K05.1",
-                            Descripcion = "Gingivitis crónica",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Codigo = "K05.2",
-                            Descripcion = "Periodontitis aguda",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Codigo = "K05.3",
-                            Descripcion = "Periodontitis crónica",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Codigo = "K05.4",
-                            Descripcion = "Periodontosis",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Codigo = "K06.0",
-                            Descripcion = "Recesión gingival",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 18,
-                            Codigo = "K06.1",
-                            Descripcion = "Agrandamiento gingival",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 19,
-                            Codigo = "K08.1",
-                            Descripcion = "Pérdida de dientes por accidente o extracción",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 20,
-                            Codigo = "K08.3",
-                            Descripcion = "Raíz dental retenida",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 21,
-                            Codigo = "K01.0",
-                            Descripcion = "Dientes incluidos",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 22,
-                            Codigo = "K01.1",
-                            Descripcion = "Dientes impactados",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 23,
-                            Codigo = "K07.0",
-                            Descripcion = "Anomalías del tamaño de los maxilares",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 24,
-                            Codigo = "K07.3",
-                            Descripcion = "Anomalías de la posición del diente",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 25,
-                            Codigo = "K12.0",
-                            Descripcion = "Estomatitis aftosa recurrente",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 26,
-                            Codigo = "K12.1",
-                            Descripcion = "Otras formas de estomatitis",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 27,
-                            Codigo = "K13.0",
-                            Descripcion = "Enfermedades de los labios",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 28,
-                            Codigo = "K13.7",
-                            Descripcion = "Otras lesiones y las no especificadas de la mucosa bucal",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 29,
-                            Codigo = "Z01.2",
-                            Descripcion = "Examen odontológico de rutina",
-                            IsDeleted = false
-                        },
-                        new
-                        {
-                            Id = 30,
-                            Codigo = "Z29.8",
-                            Descripcion = "Control preventivo y educación en salud bucal",
-                            IsDeleted = false
-                        });
                 });
 
             modelBuilder.Entity("AtencionesApp.Models.Entities.Institucion", b =>
@@ -6061,7 +5852,7 @@ namespace AtencionesApp.Migrations
                             Email = "admin@salud.com",
                             IsDeleted = false,
                             Nombre = "Admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFxza9sXVz/rkKpanhWsInLH5m21AnbzxV8guCVKavZ8CugC3qxE2ZWBAbQyibr2dg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENzHiYc8JXunDUg5EAxM2IT/+QzSkm03k5pD90ksXwYxKz6Jym/IVzGcllyE6oDpxg==",
                             RolId = 1
                         });
                 });

@@ -731,8 +731,8 @@ body {
     font-size: 1.4rem; font-weight: 700; flex-shrink: 0;
 }
 .patient-name { font-size: 1.3rem; font-weight: 700; color: var(--content-text); margin: 0; }
-.patient-info-row { font-size: 0.82rem; color: var(--sidebar-text); margin: 0; }
-.patient-info-row strong { color: var(--content-text); }
+.patient-info-row { font-size: 0.82rem; color: var(--content-text); opacity: 0.65; margin: 0; }
+.patient-info-row strong { color: var(--content-text); opacity: 1; }
 
 /* ── TIMELINE ── */
 .timeline { display: flex; flex-direction: column; gap: 0; }
@@ -754,9 +754,13 @@ body {
 }
 .badge-enf { background: rgba(59,130,246,0.15); color: #3b82f6; }
 .badge-odo { background: rgba(139,92,246,0.15); color: #8b5cf6; }
-.timeline-meta { font-size: 0.75rem; color: var(--sidebar-text); }
-.timeline-prest { font-size: 0.78rem; color: var(--sidebar-text); line-height: 1.5; }
+.timeline-meta { font-size: 0.75rem; color: var(--content-text); opacity: 0.6; }
+.timeline-prest { font-size: 0.78rem; color: var(--content-text); opacity: 0.65; line-height: 1.5; }
 .timeline-diag { font-weight: 500; color: var(--content-text); }
+.timeline-obs { font-size: 0.78rem; color: var(--content-text); opacity: 0.7; font-style: italic; margin-top: 4px; }
+.timeline-footer { margin-top: 6px; }
+.timeline-link { font-size: 0.75rem; color: var(--accent-light); text-decoration: none; transition: opacity 0.15s; }
+.timeline-link:hover { opacity: 0.75; color: var(--accent-light); }
 
 /* ── CPO GRID ── */
 .cpo-grid {
@@ -770,7 +774,7 @@ body {
 .cpo-o { background: rgba(16,185,129,0.12); }
 .cpo-temp { background: rgba(148,163,184,0.08); }
 .cpo-valor { font-size: 1.4rem; font-weight: 700; color: var(--content-text); }
-.cpo-etiq { font-size: 0.7rem; color: var(--sidebar-text); margin-top: 2px; }
+.cpo-etiq { font-size: 0.7rem; color: var(--content-text); opacity: 0.55; margin-top: 2px; }
 
 /* ── RESUMEN STATS ── */
 .resumen-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -778,7 +782,7 @@ body {
 .resumen-num { font-size: 1.6rem; font-weight: 700; color: var(--content-text); }
 .resumen-odo { color: #8b5cf6; }
 .resumen-enf { color: #3b82f6; }
-.resumen-etiq { font-size: 0.72rem; color: var(--sidebar-text); margin-top: 2px; }
+.resumen-etiq { font-size: 0.72rem; color: var(--content-text); opacity: 0.6; margin-top: 2px; }
 
 /* ── FORM LABEL SMALL ── */
 .form-label-small {
@@ -792,7 +796,7 @@ body {
 .edad-suffix { font-size: 0.75rem; color: var(--content-text); opacity: 0.5; white-space: nowrap; }
 
 /* ── TD FECHA ULT ── */
-.td-fecha-ult { font-size: 0.82rem; color: var(--sidebar-text); }
+.td-fecha-ult { font-size: 0.82rem; color: var(--content-text); opacity: 0.6; }
 
 /* ── RESPONSIVE MOBILE ── */
 @media (max-width: 768px) {

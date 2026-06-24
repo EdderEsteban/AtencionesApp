@@ -95,7 +95,7 @@ else
                             }
                             @if (rol == "Administrador" || rol == "Odontólogo")
                             {
-                                <a class="btn-accion-verde btn-accion-verde-odo btn-accion-disabled" title="Odontología — próximamente">+ Odo.</a>
+                                <a href="/AtencionesOdontologia/Create?pacienteId=@p.Id" class="btn-accion-verde btn-accion-verde-odo" title="Odontología — próximamente">+ Odo.</a>
                             }
                             @if (rol == "Administrador")
                             {

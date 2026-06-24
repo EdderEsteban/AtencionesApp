@@ -8,6 +8,7 @@ namespace AtencionesApp.Models.Entities;
       public int TipoAtencion { get; set; } // 1=Ambulatorio, 2=Internado
       public bool Embarazada { get; set; }
       public bool SinObraSocial { get; set; }
+      public string? Observaciones { get; set; }
       public bool IsDeleted { get; set; }
 
       public int PacienteId { get; set; }

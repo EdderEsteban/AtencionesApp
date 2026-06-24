@@ -7,8 +7,7 @@ public class AtencionEnfermeriaFormViewModel
     public int Id { get; set; }
 
     [Required(ErrorMessage = "La fecha es obligatoria")]
-    [DataType(DataType.Date)]
-    public DateTime Fecha { get; set; } = DateTime.Today;
+    public DateTime Fecha { get; set; } = DateTime.Now;
 
     [Required(ErrorMessage = "Seleccioná un paciente")]
     public int PacienteId { get; set; }
@@ -21,6 +20,11 @@ public class AtencionEnfermeriaFormViewModel
 
     public bool Embarazada { get; set; }
     public bool SinObraSocial { get; set; }
+    public string PacienteSexo { get; set; } = "";
+    public bool PacienteTieneObraSocial { get; set; }
+    public string? PacienteObraSocial { get; set; }
+    public string? Observaciones { get; set; }
+    public string? NuevaObraSocial { get; set; }
 
     public int Edad { get; set; }
 
