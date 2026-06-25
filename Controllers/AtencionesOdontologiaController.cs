@@ -75,6 +75,24 @@ public class AtencionesOdontologiaController : Controller
             SinObraSocial = string.IsNullOrEmpty(paciente.ObraSocial)
         };
 
+        // Auto-cargar estados del último odontograma del paciente
+        var ultimaAtencion = await _db.AtencionesOdontologia
+            .Where(a => a.PacienteId == pacienteId.Value)
+            .Include(a => a.OdontogramaEstados)
+            .OrderByDescending(a => a.Fecha)
+            .FirstOrDefaultAsync();
+
+        if (ultimaAtencion != null)
+        {
+            vm.OdontogramaEstados = ultimaAtencion.OdontogramaEstados
+                .Select(e => new OdontogramaEstadoItemVM
+                {
+                    NumeroDiente = e.NumeroDiente,
+                    Superficie = e.Superficie,
+                    Estado = e.Estado
+                }).ToList();
+        }
+
         await CargarViewBagCreate(paciente);
         return View(vm);
     }
@@ -82,7 +100,7 @@ public class AtencionesOdontologiaController : Controller
     // POST /AtencionesOdontologia/Create
     [HttpPost, ValidateAntiForgeryToken]
     [Authorize(Roles = "Administrador,Odontólogo")]
-    public async Task<IActionResult> Create(AtencionOdontologiaFormViewModel vm)
+    public async Task<IActionResult> Create(AtencionOdontologiaFormViewModel vm, string? odontogramaJson)
     {
         if (vm.Prestaciones == null || !vm.Prestaciones.Any())
             ModelState.AddModelError("Prestaciones", "Agregá al menos una prestación");
@@ -97,12 +115,13 @@ public class AtencionesOdontologiaController : Controller
         var paciente = await _db.Pacientes.FindAsync(vm.PacienteId);
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var edad = vm.Fecha.Year - paciente!.FechaNacimiento.Year;
-        if (paciente.FechaNacimiento.DayOfYear > vm.Fecha.DayOfYear) edad--;
+        var ahora = DateTime.Now;
+        var edad = ahora.Year - paciente!.FechaNacimiento.Year;
+        if (paciente.FechaNacimiento.DayOfYear > ahora.DayOfYear) edad--;
 
         var atencion = new AtencionOdontologia
         {
-            Fecha = vm.Fecha,
+            Fecha = ahora,
             PacienteId = vm.PacienteId,
             InstitucionId = 1,
             UsuarioId = userId,
@@ -138,6 +157,18 @@ public class AtencionesOdontologiaController : Controller
             };
         }
 
+        if (!string.IsNullOrWhiteSpace(odontogramaJson) && odontogramaJson != "[]")
+        {
+            var opts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var estados = System.Text.Json.JsonSerializer.Deserialize<List<OdontogramaEstadoItemVM>>(odontogramaJson, opts) ?? new();
+            atencion.OdontogramaEstados = estados.Select(e => new OdontogramaEstado
+            {
+                NumeroDiente = e.NumeroDiente,
+                Superficie = e.Superficie,
+                Estado = e.Estado
+            }).ToList();
+        }
+
         _db.AtencionesOdontologia.Add(atencion);
         await _db.SaveChangesAsync();
 
@@ -153,6 +184,7 @@ public class AtencionesOdontologiaController : Controller
             .Include(a => a.Prestaciones)
             .Include(a => a.Paciente)
             .Include(a => a.ValoracionDental)
+            .Include(a => a.OdontogramaEstados)
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (atencion == null) return NotFound();
@@ -192,7 +224,13 @@ public class AtencionesOdontologiaController : Controller
                 CariesTemp = atencion.ValoracionDental.CariesTemp,
                 ExtraccionTemp = atencion.ValoracionDental.ExtraccionTemp,
                 ObturadosTemp = atencion.ValoracionDental.ObturadosTemp
-            }
+            },
+            OdontogramaEstados = atencion.OdontogramaEstados.Select(e => new OdontogramaEstadoItemVM
+            {
+                NumeroDiente = e.NumeroDiente,
+                Superficie = e.Superficie,
+                Estado = e.Estado
+            }).ToList()
         };
 
         await CargarViewBagEdit();
@@ -202,7 +240,7 @@ public class AtencionesOdontologiaController : Controller
     // POST /AtencionesOdontologia/Edit/5
     [HttpPost, ValidateAntiForgeryToken]
     [Authorize(Roles = "Administrador,Odontólogo")]
-    public async Task<IActionResult> Edit(int id, AtencionOdontologiaFormViewModel vm)
+    public async Task<IActionResult> Edit(int id, AtencionOdontologiaFormViewModel vm, string? odontogramaJson)
     {
         if (vm.Prestaciones == null || !vm.Prestaciones.Any())
             ModelState.AddModelError("Prestaciones", "Agregá al menos una prestación");
@@ -216,6 +254,7 @@ public class AtencionesOdontologiaController : Controller
         var atencion = await _db.AtencionesOdontologia
             .Include(a => a.Prestaciones)
             .Include(a => a.ValoracionDental)
+            .Include(a => a.OdontogramaEstados)
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (atencion == null) return NotFound();
@@ -226,17 +265,13 @@ public class AtencionesOdontologiaController : Controller
             return Forbid();
 
         var paciente = await _db.Pacientes.FindAsync(atencion.PacienteId);
-        var edad = vm.Fecha.Year - paciente!.FechaNacimiento.Year;
-        if (paciente.FechaNacimiento.DayOfYear > vm.Fecha.DayOfYear) edad--;
 
-        atencion.Fecha = vm.Fecha;
         atencion.TipoConsulta = vm.TipoConsulta;
         atencion.TipoTurno = vm.TipoTurno;
         atencion.DiagnosticoId = vm.DiagnosticoId;
         atencion.Embarazada = vm.Embarazada;
         atencion.SinObraSocial = vm.SinObraSocial;
         atencion.Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim();
-        atencion.Edad = edad;
 
         if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
             paciente!.ObraSocial = vm.NuevaObraSocial.Trim();
@@ -268,6 +303,26 @@ public class AtencionesOdontologiaController : Controller
             atencion.ValoracionDental.IsDeleted = true;
         }
 
+        // Sincronizar estados del odontograma
+        foreach (var e in atencion.OdontogramaEstados)
+            e.IsDeleted = true;
+
+        if (!string.IsNullOrWhiteSpace(odontogramaJson) && odontogramaJson != "[]")
+        {
+            var opts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var estados = System.Text.Json.JsonSerializer.Deserialize<List<OdontogramaEstadoItemVM>>(odontogramaJson, opts) ?? new();
+            foreach (var e in estados)
+            {
+                _db.OdontogramaEstados.Add(new OdontogramaEstado
+                {
+                    AtencionOdontologiaId = id,
+                    NumeroDiente = e.NumeroDiente,
+                    Superficie = e.Superficie,
+                    Estado = e.Estado
+                });
+            }
+        }
+
         await _db.SaveChangesAsync();
         TempData["Exito"] = "Atención actualizada correctamente";
         return RedirectToAction(nameof(Index));
@@ -282,6 +337,7 @@ public class AtencionesOdontologiaController : Controller
             .Include(a => a.Diagnostico)
             .Include(a => a.Prestaciones).ThenInclude(p => p.TipoPrestacion)
             .Include(a => a.ValoracionDental)
+            .Include(a => a.OdontogramaEstados)
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (atencion == null) return NotFound();

@@ -30,7 +30,7 @@ namespace AtencionesApp.Models.ViewModels
         public bool SinObraSocial { get; set; }
         public string? NuevaObraSocial { get; set; }
         public string? Observaciones { get; set; }
-
+        public List<OdontogramaEstadoItemVM> OdontogramaEstados { get; set; } = new();
         public List<PrestacionSeleccionadaVM> Prestaciones { get; set; } = new();
         public ValoracionDentalVM? Valoracion { get; set; }
     }

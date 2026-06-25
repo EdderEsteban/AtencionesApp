@@ -27,6 +27,13 @@
         .OrderByDescending(a => a.Fecha)
         .Select(a => a.Fecha)
         .FirstOrDefault();
+
+    var ultimoOdontograma = Model.AtencionesOdontologia
+        .Where(a => a.OdontogramaEstados.Any())
+        .OrderByDescending(a => a.Fecha)
+        .FirstOrDefault();
+
+    var ultimaFechaOdo = ultimoOdontograma?.Fecha;
 }
 
 <div class="patient-header mb-4">
@@ -186,6 +193,29 @@
                 }
             </div>
         }
+        @if ((rol == "Administrador" || rol == "Director" || rol == "Odontólogo") && ultimoOdontograma != null)
+        {
+            <div class="form-card mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <p class="section-label mb-0">Último odontograma</p>
+                    <span class="text-muted small">@ultimaFechaOdo!.Value.ToString("dd/MM/yyyy")</span>
+                </div>
+                @await Html.PartialAsync("_Odontograma", new AtencionesApp.Models.ViewModels.OdontogramaViewModel
+                {
+                    Modo = "card",
+                    Estados = ultimoOdontograma.OdontogramaEstados.Select(e => new AtencionesApp.Models.ViewModels.OdontogramaEstadoItemVM
+                    {
+                        NumeroDiente = e.NumeroDiente,
+                        Superficie = e.Superficie,
+                        Estado = e.Estado
+                    }).ToList()
+                })
+                <div class="mt-2">
+                    <a href="/AtencionesOdontologia/Details/@ultimoOdontograma.Id" class="timeline-link">Ver atención →</a>
+                </div>
+            </div>
+        }
+
         <div class="form-card">
             <p class="section-label">Resumen</p>
             <div class="resumen-stats">
@@ -205,3 +235,10 @@
         </div>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/odontograma.css" />
+}
+@section Scripts {
+    <script src="~/js/odontograma.js"></script>
+}

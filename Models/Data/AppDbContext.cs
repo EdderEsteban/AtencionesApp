@@ -21,6 +21,7 @@ public class AppDbContext : DbContext
     public DbSet<AtencionOdontologia> AtencionesOdontologia { get; set; }
     public DbSet<PrestacionOdontologia> PrestacionesOdontologia { get; set; }
     public DbSet<ValoracionDental> ValoracionesDentales { get; set; }
+    public DbSet<OdontogramaEstado> OdontogramaEstados { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

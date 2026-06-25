@@ -1,0 +1,129 @@
+@model AtencionesApp.Models.ViewModels.OdontogramaViewModel
+@{
+    var editable = Model.Modo == "editable";
+    var esCard = Model.Modo == "card";
+    var estadosJson = System.Text.Json.JsonSerializer.Serialize(
+        Model.Estados.Select(e => new
+        {
+            numeroDiente = e.NumeroDiente,
+            superficie = e.Superficie,
+            estado = e.Estado
+        })
+    );
+    var wrapId = editable ? "odontogramaEditable" : (esCard ? "odontogramaCard" :
+"odontogramaReadonly");
+
+    var filasLeche = new[] {
+          new[] { 55,54,53,52,51,0,61,62,63,64,65 },
+          new[] { 85,84,83,82,81,0,71,72,73,74,75 }
+      };
+    var filasPerm = new[] {
+          new[] { 18,17,16,15,14,13,12,11,0,21,22,23,24,25,26,27,28 },
+          new[] { 48,47,46,45,44,43,42,41,0,31,32,33,34,35,36,37,38 }
+      };
+}
+
+<div id="@wrapId" class="odontograma-wrap @(editable ? "modo-editable" : "modo-readonly") @(esCard ? "odo-card" : "")"
+     data-estados="@estadosJson">
+
+    @if (editable)
+    {
+        <div class="odo-mini-toolbar" id="odoMiniToolbar" hidden>
+            <button class="odo-tb-btn" data-estado="0" type="button">
+                <span class="odo-tb-icon sano"></span>
+                <span class="odo-tb-label">Sano</span>
+            </button>
+            <button class="odo-tb-btn" data-estado="1" type="button">
+                <span class="odo-tb-icon caries"></span>
+                <span class="odo-tb-label">Caries</span>
+            </button>
+            <button class="odo-tb-btn" data-estado="2" type="button">
+                <span class="odo-tb-icon obturado"></span>
+                <span class="odo-tb-label">Obturado</span>
+            </button>
+            <button class="odo-tb-btn" data-estado="3" type="button">
+                <span class="odo-tb-icon ausente"></span>
+                <span class="odo-tb-label">Ausente</span>
+            </button>
+            <button class="odo-tb-btn" data-estado="4" type="button">
+                <span class="odo-tb-icon extraccion"></span>
+                <span class="odo-tb-label">Extr.</span>
+            </button>
+            <button class="odo-tb-btn" data-estado="5" type="button">
+                <span class="odo-tb-icon corona"></span>
+                <span class="odo-tb-label">Corona</span>
+            </button>
+        </div>
+    }
+
+    <div class="odo-section">
+        <div class="odo-section-label">Temporarios</div>
+        @foreach (var fila in filasLeche)
+        {
+            <div class="odo-fila mb-1">
+                @foreach (var num in fila)
+                {
+                    if (num == 0)
+                    {
+                        <div class="odo-sep-v"></div>
+                    }
+                    else
+                    {
+                        <div class="diente-wrap">
+                            <div class="diente-num">@num</div>
+                            <svg class="diente-svg" data-numero="@num" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                                <polygon class="superficie" data-sup="V" points="0,0 44,0 33,11
+                                11,11" />
+                                <polygon class="superficie" data-sup="D" points="44,0 44,44 33,33
+                                33,11" />
+                                <polygon class="superficie" data-sup="L" points="44,44 0,44 11,33
+                                33,33" />
+                                <polygon class="superficie" data-sup="M" points="0,44 0,0 11,11
+                                11,33" />
+                                <polygon class="superficie" data-sup="O" points="11,11 33,11 33,33
+                                11,33" />
+                            </svg>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+
+    <div class="odo-separator"></div>
+
+    <div class="odo-section">
+        <div class="odo-section-label">Permanentes</div>
+        @foreach (var fila in filasPerm)
+        {
+            <div class="odo-fila mb-1">
+                @foreach (var num in fila)
+                {
+                    if (num == 0)
+                    {
+                        <div class="odo-sep-v"></div>
+                    }
+                    else
+                    {
+                        <div class="diente-wrap">
+                            <div class="diente-num">@num</div>
+                            <svg class="diente-svg" data-numero="@num" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                                <polygon class="superficie" data-sup="V" points="0,0 44,0 33,11
+                                11,11" />
+                                <polygon class="superficie" data-sup="D" points="44,0 44,44 33,33
+                                33,11" />
+                                <polygon class="superficie" data-sup="L" points="44,44 0,44 11,33
+                                33,33" />
+                                <polygon class="superficie" data-sup="M" points="0,44 0,0 11,11
+                                11,33" />
+                                <polygon class="superficie" data-sup="O" points="11,11 33,11 33,33
+                                11,33" />
+                            </svg>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+
+</div>

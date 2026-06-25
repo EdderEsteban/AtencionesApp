@@ -127,21 +127,6 @@ document.getElementById('formAtencion')?.addEventListener('submit', e => {
     });
 });
 
-// === VALORACIÓN DENTAL ===
-const chkValoracion = document.getElementById('chkValoracion');
-const valoracionPanel = document.getElementById('valoracionPanel');
-
-chkValoracion?.addEventListener('change', () => {
-    const inputs = valoracionPanel?.querySelectorAll('input');
-    if (chkValoracion.checked) {
-        if (valoracionPanel) valoracionPanel.style.display = 'block';
-        inputs?.forEach(i => i.disabled = false);
-    } else {
-        if (valoracionPanel) valoracionPanel.style.display = 'none';
-        inputs?.forEach(i => { i.disabled = true; });
-    }
-});
-
 // === OBRA SOCIAL INLINE ===
 const sinOsCheck = document.getElementById('SinObraSocial');
 const osContainer = document.getElementById('osInlineContainer');

@@ -109,6 +109,22 @@
     </div>
 
     <div class="col-md-8">
+        @if (Model.OdontogramaEstados.Any())
+        {
+            <div class="form-card mb-4">
+                <p class="section-label">Odontograma</p>
+                @await Html.PartialAsync("_Odontograma", new AtencionesApp.Models.ViewModels.OdontogramaViewModel
+                {
+                    Modo = "readonly",
+                    Estados = Model.OdontogramaEstados.Select(e => new AtencionesApp.Models.ViewModels.OdontogramaEstadoItemVM
+                    {
+                        NumeroDiente = e.NumeroDiente,
+                        Superficie = e.Superficie,
+                        Estado = e.Estado
+                    }).ToList()
+                })
+            </div>
+        }
         <div class="form-card">
             <p class="section-label">Prestaciones (@Model.Prestaciones.Count)</p>
             @if (!Model.Prestaciones.Any())
@@ -139,3 +155,10 @@
     </div>
 
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/odontograma.css" />
+}
+@section Scripts {
+    <script src="~/js/odontograma.js"></script>
+}

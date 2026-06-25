@@ -6,8 +6,9 @@ const el = document.getElementById('dashboard-data');
   const donutVals = JSON.parse(el.dataset.donutvals);
   const labels6m  = JSON.parse(el.dataset.labels6m);
   const serieM    = JSON.parse(el.dataset.seriem);
-  const top10nom  = JSON.parse(el.dataset.top10nom);
-  const top10cant = JSON.parse(el.dataset.top10cant);
+  const top10nom   = JSON.parse(el.dataset.top10nom);
+  const top10cant  = JSON.parse(el.dataset.top10cant);
+  const top10tipos = JSON.parse(el.dataset.top10tipos || '[]');
 
   const accent  = '#7c6af7';
   const accent2 = '#22d3ee';
@@ -74,12 +75,15 @@ const el = document.getElementById('dashboard-data');
       }
   });
 
+  const top10colors = top10tipos.length
+      ? top10tipos.map(t => t === 'O' ? accent2 : accent)
+      : accent;
+
   new Chart(document.getElementById('chartTop10'), {
       type: 'bar',
       data: {
           labels: top10nom,
-          datasets: [{ label: 'Cantidad', data: top10cant, backgroundColor: accent, borderRadius: 4
-  }]
+          datasets: [{ label: 'Cantidad', data: top10cant, backgroundColor: top10colors, borderRadius: 4 }]
       },
       options: {
           indexAxis: 'y',

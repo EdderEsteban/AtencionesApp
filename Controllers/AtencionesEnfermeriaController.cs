@@ -100,12 +100,13 @@ using AtencionesApp.Models.Data;
           var paciente = await _db.Pacientes.FindAsync(vm.PacienteId);
           var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-          var edad = vm.Fecha.Year - paciente!.FechaNacimiento.Year;
-          if (paciente.FechaNacimiento.DayOfYear > vm.Fecha.DayOfYear) edad--;
+          var ahora = DateTime.Now;
+          var edad = ahora.Year - paciente!.FechaNacimiento.Year;
+          if (paciente.FechaNacimiento.DayOfYear > ahora.DayOfYear) edad--;
 
           var atencion = new AtencionEnfermeria
           {
-              Fecha = vm.Fecha,
+              Fecha = ahora,
               PacienteId = vm.PacienteId,
               InstitucionId = 1,   // TODO: institución activa de sesión
               UsuarioId = userId,
@@ -205,15 +206,11 @@ using AtencionesApp.Models.Data;
               return Forbid();
 
           var paciente = await _db.Pacientes.FindAsync(atencion.PacienteId);
-          var edad = vm.Fecha.Year - paciente!.FechaNacimiento.Year;
-          if (paciente.FechaNacimiento.DayOfYear > vm.Fecha.DayOfYear) edad--;
 
-          atencion.Fecha = vm.Fecha;
           atencion.TipoAtencion = vm.TipoAtencion;
           atencion.Embarazada = vm.Embarazada;
           atencion.SinObraSocial = vm.SinObraSocial;
           atencion.Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim();
-          atencion.Edad = edad;
 
           if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
               paciente!.ObraSocial = vm.NuevaObraSocial.Trim();

@@ -25,8 +25,7 @@
 <form method="get" action="/Pacientes" class="d-flex gap-2 mb-4">
     <div class="search-input-wrap flex-grow-1">
         <i class="bi bi-search search-icon"></i>
-        <input type="text" name="q" value="@ViewBag.Busqueda"
-               placeholder="Buscar por DNI, nombre o apellido..."
+        <input type="text" name="q" value="@ViewBag.Busqueda" placeholder="Buscar por DNI, nombre o apellido..."
                class="search-input" autofocus />
     </div>
     <button type="submit" class="search-btn">Buscar</button>
@@ -91,11 +90,13 @@ else
                             <a href="/Pacientes/Details/@p.Id" class="btn-accion-outline">Ver ficha</a>
                             @if (rol == "Administrador" || rol == "Enfermero")
                             {
-                                <a href="/AtencionesEnfermeria/Create?pacienteId=@p.Id" class="btn-accion-verde" title="Nueva atención de enfermería">+ Enf.</a>
+                                <a href="/AtencionesEnfermeria/Create?pacienteId=@p.Id" class="btn-accion-verde"
+                                   title="Nueva atención de enfermería">+ Enf.</a>
                             }
                             @if (rol == "Administrador" || rol == "Odontólogo")
                             {
-                                <a href="/AtencionesOdontologia/Create?pacienteId=@p.Id" class="btn-accion-verde btn-accion-verde-odo" title="Odontología — próximamente">+ Odo.</a>
+                                <a href="/AtencionesOdontologia/Create?pacienteId=@p.Id"
+                                   class="btn-accion-verde btn-accion-verde-odo" title="Odontología — próximamente">+ Odo.</a>
                             }
                             @if (rol == "Administrador")
                             {

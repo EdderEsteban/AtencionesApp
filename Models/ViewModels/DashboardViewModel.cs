@@ -18,6 +18,7 @@
       // Gráfica 4 — Top 10 prestaciones
       public List<string> Top10Nombres { get; set; } = new();
       public List<int> Top10Cantidades { get; set; } = new();
+      public List<string> Top10Tipos { get; set; } = new(); // "E" = Enfermería, "O" = Odontología
 
       // Títulos dinámicos según rol
       public string TituloBarras { get; set; } = string.Empty;

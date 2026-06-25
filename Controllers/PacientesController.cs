@@ -184,6 +184,8 @@ public class PacientesController : Controller
                     .ThenInclude(pr => pr.TipoPrestacion)
             .Include(p => p.AtencionesOdontologia)
                 .ThenInclude(a => a.ValoracionDental)
+            .Include(p => p.AtencionesOdontologia)
+                .ThenInclude(a => a.OdontogramaEstados)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (paciente == null)

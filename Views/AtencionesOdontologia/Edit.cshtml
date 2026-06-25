@@ -23,6 +23,7 @@
     <input asp-for="PacienteId" type="hidden" />
     <input asp-for="PacienteNombre" type="hidden" />
     <input asp-for="PacienteFechaNacimiento" type="hidden" />
+    <input type="hidden" id="odontogramaJson" name="odontogramaJson" value="[]" />
 
     <div id="datosCalculo" hidden
          data-fecha-nac="@Model.PacienteFechaNacimiento"
@@ -36,11 +37,11 @@
             <div class="form-card mb-3">
                 <p class="section-label">Datos de la atención</p>
                 <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label-small">FECHA</label>
-                        <input asp-for="Fecha" type="date" class="form-control" id="inputFecha" />
-                        <span asp-validation-for="Fecha" class="text-danger small"></span>
+                    <div class="col-12">
+                        <label class="form-label-small">FECHA DE REGISTRO</label>
+                        <p style="color: var(--content-text); font-weight: 600; margin: 4px 0 0;">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
                     </div>
+                    <input type="hidden" id="inputFecha" value="@Model.Fecha.ToString("yyyy-MM-ddTHH:mm")" />
                     <div class="col-6">
                         <label class="form-label-small">TIPO DE CONSULTA</label>
                         <select asp-for="TipoConsulta" class="form-select">
@@ -121,54 +122,53 @@
             </div>
 
             <div class="form-card mb-3">
-                <div class="d-flex align-items-center gap-3 mb-2">
-                    <p class="section-label mb-0">Valoración Dental</p>
-                    <div class="form-check mb-0">
-                        <input type="checkbox" class="form-check-input" id="chkValoracion"
-                               @(Model.Valoracion != null ? "checked" : "") />
-                        <label class="form-check-label" for="chkValoracion">Registrar índice CPO</label>
-                    </div>
-                </div>
-                <div id="valoracionPanel" style="display: @(Model.Valoracion != null ? "block" : "none")">
-                    <div class="cpo-form-grid">
-                        <div class="cpo-form-group">
-                            <label class="form-label-small">C PERM.</label>
-                            <input name="Valoracion.CariesPerm" type="number" class="form-control cpo-input" min="0" max="32"
-                                   value="@(Model.Valoracion?.CariesPerm ?? 0)"
-                                   @(Model.Valoracion == null ? "disabled" : "") />
-                        </div>
-                        <div class="cpo-form-group">
-                            <label class="form-label-small">P PERM.</label>
-                            <input name="Valoracion.PerdidosPerm" type="number" class="form-control cpo-input" min="0" max="32"
-                                   value="@(Model.Valoracion?.PerdidosPerm ?? 0)"
-                                   @(Model.Valoracion == null ? "disabled" : "") />
-                        </div>
-                        <div class="cpo-form-group">
-                            <label class="form-label-small">O PERM.</label>
-                            <input name="Valoracion.ObturadosPerm" type="number" class="form-control cpo-input" min="0" max="32"
-                                   value="@(Model.Valoracion?.ObturadosPerm ?? 0)"
-                                   @(Model.Valoracion == null ? "disabled" : "") />
-                        </div>
-                        <div class="cpo-form-group">
-                            <label class="form-label-small">c temp.</label>
-                            <input name="Valoracion.CariesTemp" type="number" class="form-control cpo-input" min="0" max="20"
-                                   value="@(Model.Valoracion?.CariesTemp ?? 0)"
-                                   @(Model.Valoracion == null ? "disabled" : "") />
-                        </div>
-                        <div class="cpo-form-group">
-                            <label class="form-label-small">e temp.</label>
-                            <input name="Valoracion.ExtraccionTemp" type="number" class="form-control cpo-input" min="0" max="20"
-                                   value="@(Model.Valoracion?.ExtraccionTemp ?? 0)"
-                                   @(Model.Valoracion == null ? "disabled" : "") />
-                        </div>
-                        <div class="cpo-form-group">
-                            <label class="form-label-small">o temp.</label>
-                            <input name="Valoracion.ObturadosTemp" type="number" class="form-control cpo-input" min="0" max="20"
-                                   value="@(Model.Valoracion?.ObturadosTemp ?? 0)"
-                                   @(Model.Valoracion == null ? "disabled" : "") />
+                <p class="section-label mb-3">Odontograma y Valoración CPO</p>
+                <div class="row g-3 align-items-start">
+                    <div class="col-7">
+                        <div class="odontograma-card-clickable" data-bs-toggle="modal" data-bs-target="#modalOdontograma">
+                            @await Html.PartialAsync("_Odontograma", new AtencionesApp.Models.ViewModels.OdontogramaViewModel
+                            {
+                                Modo = "card",
+                                Estados = new()
+                            })
+                            <div class="odo-card-hint">Hacé clic para editar</div>
                         </div>
                     </div>
-                    <span class="form-text">Permanentes (C-P-O) · Temporarios (c-e-o)</span>
+                    <div class="col-5">
+                        <div class="cpo-form-grid">
+                            <div class="cpo-form-group">
+                                <label class="form-label-small">C PERM.</label>
+                                <input id="Valoracion_CariesPerm" name="Valoracion.CariesPerm" type="number" class="form-control cpo-input" min="0" max="32"
+                                       value="@(Model.Valoracion?.CariesPerm ?? 0)" readonly />
+                            </div>
+                            <div class="cpo-form-group">
+                                <label class="form-label-small">P PERM.</label>
+                                <input id="Valoracion_PerdidosPerm" name="Valoracion.PerdidosPerm" type="number" class="form-control cpo-input" min="0" max="32"
+                                       value="@(Model.Valoracion?.PerdidosPerm ?? 0)" readonly />
+                            </div>
+                            <div class="cpo-form-group">
+                                <label class="form-label-small">O PERM.</label>
+                                <input id="Valoracion_ObturadosPerm" name="Valoracion.ObturadosPerm" type="number" class="form-control cpo-input" min="0" max="32"
+                                       value="@(Model.Valoracion?.ObturadosPerm ?? 0)" readonly />
+                            </div>
+                            <div class="cpo-form-group">
+                                <label class="form-label-small">c temp.</label>
+                                <input id="Valoracion_CariesTemp" name="Valoracion.CariesTemp" type="number" class="form-control cpo-input" min="0" max="20"
+                                       value="@(Model.Valoracion?.CariesTemp ?? 0)" readonly />
+                            </div>
+                            <div class="cpo-form-group">
+                                <label class="form-label-small">e temp.</label>
+                                <input id="Valoracion_ExtraccionTemp" name="Valoracion.ExtraccionTemp" type="number" class="form-control cpo-input" min="0" max="20"
+                                       value="@(Model.Valoracion?.ExtraccionTemp ?? 0)" readonly />
+                            </div>
+                            <div class="cpo-form-group">
+                                <label class="form-label-small">o temp.</label>
+                                <input id="Valoracion_ObturadosTemp" name="Valoracion.ObturadosTemp" type="number" class="form-control cpo-input" min="0" max="20"
+                                       value="@(Model.Valoracion?.ObturadosTemp ?? 0)" readonly />
+                            </div>
+                        </div>
+                        <span class="form-text">Permanentes (C·P·O) · Temporarios (c·e·o)</span>
+                    </div>
                 </div>
             </div>
 
@@ -216,9 +216,33 @@
     </div>
 </form>
 
+<!-- Modal odontograma -->
+<div class="modal fade modal-odontograma" id="modalOdontograma" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-grid-3x3-gap me-2"></i>Odontograma</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("_Odontograma", new AtencionesApp.Models.ViewModels.OdontogramaViewModel
+                {
+                    Modo = "editable",
+                    Estados = Model.OdontogramaEstados
+                })
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <link rel="stylesheet" href="~/css/odontologia.css" />
+    <link rel="stylesheet" href="~/css/odontograma.css" />
 }
 @section Scripts {
     <script src="~/js/odontologia.js"></script>
+    <script src="~/js/odontograma.js"></script>
 }

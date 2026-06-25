@@ -91,6 +91,7 @@ mes.Month)?.Count ?? 0;
 
             vm.Top10Nombres = top10Enf.Select(x => x.Nombre).ToList();
             vm.Top10Cantidades = top10Enf.Select(x => x.Total).ToList();
+            vm.Top10Tipos = top10Enf.Select(_ => "E").ToList();
         }
         else if (rol == "Odontólogo")
         {
@@ -141,6 +142,7 @@ mes.Month)?.Count ?? 0;
 
             vm.Top10Nombres = top10Odo.Select(x => x.Nombre).ToList();
             vm.Top10Cantidades = top10Odo.Select(x => x.Total).ToList();
+            vm.Top10Tipos = top10Odo.Select(_ => "O").ToList();
         }
         else // Administrador o Director
         {
@@ -208,15 +210,17 @@ mes.Month)?.Count ?? 0;
                 .Select(g => new { Nombre = g.Key, Total = g.Sum(x => x.Cantidad) })
                 .ToListAsync();
 
-            var top10 = prestEnf.Concat(prestOdo)
+            var top10 = prestEnf.Select(x => new { x.Nombre, x.Total, Tipo = "E" })
+                .Concat(prestOdo.Select(x => new { x.Nombre, x.Total, Tipo = "O" }))
                 .GroupBy(x => x.Nombre)
-                .Select(g => new { Nombre = g.Key, Total = g.Sum(x => x.Total) })
+                .Select(g => new { Nombre = g.Key, Total = g.Sum(x => x.Total), Tipo = g.First().Tipo })
                 .OrderByDescending(x => x.Total)
                 .Take(10)
                 .ToList();
 
             vm.Top10Nombres = top10.Select(x => x.Nombre).ToList();
             vm.Top10Cantidades = top10.Select(x => x.Total).ToList();
+            vm.Top10Tipos = top10.Select(x => x.Tipo).ToList();
         }
 
         return View(vm);
