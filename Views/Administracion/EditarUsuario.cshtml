@@ -1,0 +1,96 @@
+@model AtencionesApp.Models.ViewModels.UsuarioFormViewModel
+@{
+    ViewData["Title"] = "Editar Usuario";
+    var roles = ViewBag.Roles as List<AtencionesApp.Models.Entities.Rol> ?? new();
+    var instituciones = ViewBag.Instituciones as List<AtencionesApp.Models.Entities.Institucion> ?? new();
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/administracion.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" />
+}
+
+<div class="page-header mb-4">
+    <div>
+        <h4 class="page-title">Editar Usuario</h4>
+        <p class="page-sub">@Model.Apellido, @Model.Nombre</p>
+    </div>
+    <a href="/Administracion/Usuarios" class="btn-admin-back">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<div class="form-card">
+    <form method="post" action="/Administracion/EditarUsuario/@Model.Id">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label-small">NOMBRE</label>
+                <input asp-for="Nombre" class="form-control form-control-app" />
+                <span asp-validation-for="Nombre" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-small">APELLIDO</label>
+                <input asp-for="Apellido" class="form-control form-control-app" />
+                <span asp-validation-for="Apellido" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-small">EMAIL</label>
+                <input asp-for="Email" type="email" class="form-control form-control-app" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-small">TELÉFONO</label>
+                <input asp-for="Telefono" class="form-control form-control-app" placeholder="Opcional" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-small">NUEVA CONTRASEÑA <span class="form-hint-inline">(dejar vacío para no cambiar)</span></label>
+                <input asp-for="Contrasena" type="password" class="form-control form-control-app"
+                       placeholder="Solo si desea cambiarla" />
+                <span asp-validation-for="Contrasena" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-small">CONFIRMAR CONTRASEÑA</label>
+                <input asp-for="ConfirmarContrasena" type="password" class="form-control form-control-app"
+                       placeholder="Repetir nueva contraseña" />
+                <span asp-validation-for="ConfirmarContrasena" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-small">ROL</label>
+                <select asp-for="RolId" class="form-select form-control-app">
+                    <option value="">Seleccionar rol…</option>
+                    @foreach (var r in roles)
+                    {
+                        <option value="@r.Id" selected="@(r.Id == Model.RolId ? "selected" : null)">@r.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="RolId" class="text-danger small"></span>
+            </div>
+            <div class="col-12">
+                <label class="form-label-small">INSTITUCIONES ASIGNADAS</label>
+                <select id="selectInstituciones" name="InstitucionIds" multiple
+                        class="form-control-app" placeholder="Buscar institución…">
+                    @foreach (var inst in instituciones)
+                    {
+                        <option value="@inst.Id"
+                                selected="@(Model.InstitucionIds.Contains(inst.Id) ? "selected" : null)">
+                            @inst.Nombre
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions-admin mt-4">
+            <button type="submit" class="btn-admin-primary">
+                <i class="bi bi-check-lg"></i> Guardar cambios
+            </button>
+            <a href="/Administracion/Usuarios" class="btn-cancelar-admin">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <script src="~/js/administracion.js"></script>
+}

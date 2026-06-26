@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "Detalle de Atención";
     var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var esPropia = Model.UsuarioId.ToString() == userId;
 }
 
 <div class="page-header mb-4">
@@ -13,7 +15,7 @@
             <h4 class="page-title">Atención del @Model.Fecha.ToString("dd/MM/yyyy HH:mm")</h4>
             <p class="page-sub">@Model.Paciente.Apellido, @Model.Paciente.Nombre · DNI @Model.Paciente.DNI</p>
         </div>
-        @if (rol == "Administrador" || rol == "Odontólogo")
+        @if (rol == "Administrador" || (rol == "Odontólogo" && esPropia && Model.Fecha.Date == DateTime.Today))
         {
             <a href="/AtencionesOdontologia/Edit/@Model.Id" class="btn-primary-app">
                 <i class="bi bi-pencil"></i> Editar
@@ -21,6 +23,13 @@
         }
     </div>
 </div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert-app-error mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+    </div>
+}
 
 <div class="row g-4">
 
@@ -91,15 +100,15 @@
                         <div class="cpo-valor">@Model.ValoracionDental.ObturadosPerm</div>
                         <div class="cpo-etiq">O perm.</div>
                     </div>
-                    <div class="cpo-cell cpo-temp">
+                    <div class="cpo-cell cpo-tc">
                         <div class="cpo-valor">@Model.ValoracionDental.CariesTemp</div>
                         <div class="cpo-etiq">c temp.</div>
                     </div>
-                    <div class="cpo-cell cpo-temp">
+                    <div class="cpo-cell cpo-te">
                         <div class="cpo-valor">@Model.ValoracionDental.ExtraccionTemp</div>
                         <div class="cpo-etiq">e temp.</div>
                     </div>
-                    <div class="cpo-cell cpo-temp">
+                    <div class="cpo-cell cpo-to">
                         <div class="cpo-valor">@Model.ValoracionDental.ObturadosTemp</div>
                         <div class="cpo-etiq">o temp.</div>
                     </div>
@@ -158,6 +167,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/odontograma.css" />
+    <link rel="stylesheet" href="~/css/odontologia.css" />
 }
 @section Scripts {
     <script src="~/js/odontograma.js"></script>

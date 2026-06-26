@@ -1,0 +1,18 @@
+@if (!User.IsInRole("Administrador")) { return; }
+@{
+    var accion = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var tabUsuarios = accion.Contains("Usuario") ? "admin-tab active" : "admin-tab";
+    var tabEnf     = accion.Contains("Enfermeria") ? "admin-tab active" : "admin-tab";
+    var tabOdo     = accion.Contains("Odontologia") ? "admin-tab active" : "admin-tab";
+}
+<div class="admin-tabs mb-4">
+    <a href="/Administracion/Usuarios" class="@tabUsuarios">
+        <i class="bi bi-people"></i> Usuarios
+    </a>
+    <a href="/Administracion/PrestacionesEnfermeria" class="@tabEnf">
+        <i class="bi bi-heart-pulse"></i> Prestaciones Enfermería
+    </a>
+    <a href="/Administracion/PrestacionesOdontologia" class="@tabOdo">
+        <i class="bi bi-hospital"></i> Prestaciones Odontología
+    </a>
+</div>

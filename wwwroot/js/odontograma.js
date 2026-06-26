@@ -181,7 +181,7 @@
             if (sups['*'] === 4) continue; // indicada no cuenta en permanentes
             const vals = Object.values(sups).filter(v => v > 0);
             if (vals.includes(1)) C++;
-            else if (vals.some(v => v === 2 || v === 5)) O++;
+            else if (vals.some(v => v === 2 || v === 5)) O++; // suma corona a obturados en permanentes
         }
 
         for (const num of TEMPORARIOS) {
@@ -191,7 +191,7 @@
             if (sups['*'] === 4) { e++; continue; }
             const vals = Object.values(sups).filter(v => v > 0);
             if (vals.includes(1)) c++;
-            else if (vals.some(v => v === 2 || v === 5)) o++;
+            else if (vals.some(v => v === 2 || v === 5)) o++; // suma corona a obturados en temporarios
         }
 
         fijarInput('Valoracion_CariesPerm', C);

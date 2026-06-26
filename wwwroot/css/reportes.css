@@ -1,0 +1,183 @@
+/* ── FILTROS ── */
+  .reporte-filtros-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+  }
+  .reporte-filtros-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+  }
+  .periodo-btns {
+      display: inline-flex;
+      gap: 4px;
+      background: var(--content-bg);
+      border: 1px solid var(--navbar-border);
+      border-radius: 10px;
+      padding: 4px;
+  }
+  .periodo-btn {
+      padding: 7px 14px;
+      border: none;
+      background: transparent;
+      color: var(--content-text);
+      opacity: 0.6;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s, color 0.15s;
+  }
+  .periodo-btn:hover { opacity: 1; background: var(--btn-icon-hover); }
+  .periodo-btn.active {
+      background: var(--accent);
+      color: #fff;
+      opacity: 1;
+      font-weight: 600;
+  }
+
+  .reporte-prof-filtro {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  }
+  .reporte-select {
+      max-width: 240px;
+      background: var(--content-bg);
+      border: 1px solid var(--navbar-border);
+      color: var(--content-text);
+  }
+
+  .reporte-rango {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+  }
+  .reporte-date {
+      max-width: 170px;
+      background: var(--content-bg);
+      border: 1px solid var(--navbar-border);
+      color: var(--content-text);
+  }
+  .reporte-rango-sep { color: var(--content-text); opacity: 0.6; font-size: 0.85rem; }
+  .btn-reporte-aplicar {
+      padding: 7px 18px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+  }
+  .btn-reporte-aplicar:hover { background: var(--accent-hover); }
+
+  /* ── ENCABEZADO ── */
+  .reporte-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+  }
+  .reporte-sub-sep { margin: 0 6px; opacity: 0.4; }
+  .btn-exportar-excel {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      background: #1d6f42;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s;
+  }
+  .btn-exportar-excel:hover { background: #155633; color: #fff; }
+
+  /* ── RESUMEN STATS ── */
+  .reporte-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+  }
+  .reporte-stat-card {
+      background: var(--navbar-bg);
+      border: 1px solid var(--navbar-border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+  }
+  .reporte-stat-num {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--content-text);
+      line-height: 1.1;
+  }
+  .reporte-stat-label {
+      font-size: 0.78rem;
+      color: var(--content-text);
+      opacity: 0.6;
+      margin-top: 4px;
+  }
+  .reporte-stat-sub {
+      font-size: 0.7rem;
+      color: var(--content-text);
+      opacity: 0.45;
+      margin-top: 2px;
+  }
+  .reporte-stat-os .reporte-stat-num { color: #f59e0b; }
+
+  /* ── CARDS / GRÁFICOS ── */
+  .reporte-card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--content-text);
+      margin-bottom: 14px;
+  }
+  .reporte-donut-wrap {
+      max-width: 280px;
+      margin: 0 auto;
+  }
+
+  /* ── EMPTY ── */
+  .reporte-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--content-text);
+      opacity: 0.5;
+  }
+  .reporte-empty .bi { font-size: 2.4rem; display: block; margin-bottom: 10px; }
+
+  /* ── BADGES TABLA ── */
+  .badge-pct {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+  }
+  .badge-pct-os {
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 992px) {
+      .reporte-stats { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 576px) {
+      .reporte-stats { grid-template-columns: repeat(2, 1fr); }
+      .periodo-btns { width: 100%; justify-content: space-between; }
+      .periodo-btn { flex: 1; padding: 7px 6px; font-size: 0.78rem; }
+  }

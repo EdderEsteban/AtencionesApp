@@ -1,0 +1,107 @@
+@model List<AtencionesApp.Models.Entities.Usuario>
+@{
+    ViewData["Title"] = "Usuarios";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/administracion.css" />
+}
+
+@await Html.PartialAsync("_AdminNav")
+
+<div class="page-header mb-3">
+    <div>
+        <h4 class="page-title">Usuarios</h4>
+        <p class="page-sub">Gestión de cuentas del sistema</p>
+    </div>
+    <a href="/Administracion/CrearUsuario" class="btn-admin-primary">
+        <i class="bi bi-person-plus"></i> Nuevo usuario
+    </a>
+</div>
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alert-admin-ok mb-3">
+        <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+    </div>
+}
+
+<div class="admin-search-bar">
+    <div class="admin-search-wrapper">
+        <i class="bi bi-search"></i>
+        <input type="text" id="inputBusqueda" class="admin-search-input"
+               placeholder="Filtrar por nombre, email o rol…" />
+    </div>
+    <span id="contadorUsuarios" style="font-size: 0.82rem; color: var(--sidebar-text);">
+        @Model.Count usuario@(Model.Count != 1 ? "s" : "")
+    </span>
+</div>
+
+<div class="admin-card">
+    <table class="table-app" id="tablaUsuarios">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Rol</th>
+                <th>Instituciones</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-sm">@(u.Nombre[0])@(u.Apellido[0])</div>
+                            <span>@u.Apellido, @u.Nombre</span>
+                        </div>
+                    </td>
+                    <td style="color: var(--content-text);">@u.Email</td>
+                    <td style="color: var(--content-text);">@(u.Telefono ?? "—")</td>
+                    <td>
+                        <span class="badge-rol badge-rol-@u.Rol.Nombre.ToLower().Replace("ó","o").Replace("é","e")">
+                            @u.Rol.Nombre
+                        </span>
+                    </td>
+                    <td style="color: var(--content-text); font-size: 0.82rem;">
+                        @if (!u.Instituciones.Any())
+                        {
+                            <span style="color: var(--sidebar-text);">Sin asignar</span>
+                        }
+                        else if (u.Instituciones.Count == 1)
+                        {
+                            @u.Instituciones.First().Nombre
+                        }
+                        else
+                        {
+                            <span>@u.Instituciones.Count instituciones</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="/Administracion/EditarUsuario/@u.Id" class="btn-icon" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="/Administracion/EliminarUsuario/@u.Id"
+                                  onsubmit="return confirm('¿Eliminar usuario @u.Nombre @u.Apellido?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-icon btn-icon-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div id="sinResultados" style="display:none; padding: 32px; text-align: center; color: var(--sidebar-text); font-size: 0.88rem;">
+        No se encontraron usuarios con ese criterio
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/administracion.js"></script>
+}

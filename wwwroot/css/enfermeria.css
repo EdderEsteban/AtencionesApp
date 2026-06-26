@@ -122,13 +122,23 @@
 
 .btn-cancelar-atencion {
     padding: 12px 20px;
-    color: var(--sidebar-text);
+    color: var(--content-text);
     text-decoration: none;
     font-size: 0.9rem;
+    font-weight: 500;
     border-radius: 8px;
-    transition: background 0.15s;
+    border: 1.5px solid var(--navbar-border);
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
 }
-.btn-cancelar-atencion:hover { background: var(--sidebar-hover); color: var(--content-text); }
+.btn-cancelar-atencion:hover {
+    background: var(--btn-icon-hover);
+    color: var(--content-text);
+    border-color: var(--content-text);
+    opacity: 0.85;
+}
+[data-bs-theme="dark"] .btn-cancelar-atencion {
+    border-color: rgba(255, 255, 255, 0.22);
+}
 
 /* ── BADGE CONTADOR ── */
 .badge-contador {

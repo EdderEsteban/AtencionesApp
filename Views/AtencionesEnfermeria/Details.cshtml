@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "Detalle de Atención";
     var rol = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var esPropia = Model.UsuarioId.ToString() == userId;
 }
 
 <div class="page-header mb-4">
@@ -14,7 +16,7 @@
             <p class="page-sub">@Model.Paciente.Apellido, @Model.Paciente.Nombre · DNI
                 @Model.Paciente.DNI</p>
             </div>
-            @if (rol == "Administrador" || rol == "Enfermero")
+            @if (rol == "Administrador" || (rol == "Enfermero" && esPropia && Model.Fecha.Date == DateTime.Today))
             {
                 <a href="/AtencionesEnfermeria/Edit/@Model.Id" class="btn-primary-app">
                     <i class="bi bi-pencil"></i> Editar
@@ -22,6 +24,13 @@
             }
         </div>
     </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-app-error mb-4">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
 
     <div class="row g-4">
 

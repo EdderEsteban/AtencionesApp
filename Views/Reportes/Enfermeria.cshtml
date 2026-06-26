@@ -1,0 +1,197 @@
+@model AtencionesApp.Models.ViewModels.ReporteEnfermeriaViewModel
+@{
+    ViewData["Title"] = "Reporte Enfermería";
+    var periodo = ViewContext.HttpContext.Request.Query["periodo"].ToString();
+    if (string.IsNullOrEmpty(periodo)) periodo = "mes";
+    var qs = ViewContext.HttpContext.Request.QueryString.Value ?? "";
+    var exportUrl = "/Reportes/ExportarEnfermeriaExcel" + qs;
+    var esDirectorOAdmin = User.IsInRole("Administrador") || User.IsInRole("Director");
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/reportes.css" />
+}
+
+<div hidden id="reporteData" data-labels-actividad='@Html.Raw(Json.Serialize(Model.LabelsActividad))'
+     data-serie-actividad='@Html.Raw(Json.Serialize(Model.SerieActividad))' data-ambulatorio="@Model.TotalAmbulatorio"
+     data-internado="@Model.TotalInternado" data-con-os="@Model.TotalConOS" data-sin-os="@Model.TotalSinOS"
+     data-sexo-m="@Model.SexoM" data-sexo-f="@Model.SexoF" data-sexo-no-esp="@Model.SexoNoEsp"
+     data-labels-edad='@Html.Raw(Json.Serialize(Model.LabelsEdad))'
+     data-serie-edad='@Html.Raw(Json.Serialize(Model.SerieEdad))'
+     data-top10-nombres='@Html.Raw(Json.Serialize(Model.Top10Nombres))'
+     data-top10-cantidades='@Html.Raw(Json.Serialize(Model.Top10Cantidades))'>
+</div>
+
+<!-- FILTROS -->
+<form method="get" action="/Reportes/Enfermeria" id="formFiltros" class="mb-4">
+    <div class="form-card reporte-filtros-card">
+        <div class="reporte-filtros-row">
+            <div class="periodo-btns">
+                <button type="button" class="periodo-btn @(periodo == "semana" ? "active" : "")" data-periodo="semana">Esta semana</button>
+                <button type="button" class="periodo-btn @(periodo == "mes" ? "active" : "")" data-periodo="mes">Este mes</button>
+                <button type="button" class="periodo-btn @(periodo == "anio" ? "active" : "")" data-periodo="anio">Este año</button>
+                <button type="button" class="periodo-btn @(periodo == "personalizado" ? "active" : "")" data-periodo="personalizado">Personalizado</button>
+            </div>
+
+            @if (esDirectorOAdmin && Model.Profesionales.Any())
+            {
+                <div class="reporte-prof-filtro">
+                    <label class="form-label-small mb-0">Profesional:</label>
+                    <select name="profesionalId" class="form-select form-select-sm reporte-select"
+                            onchange="document.getElementById('formFiltros').submit()">
+                        <option value="">Todos</option>
+                        @foreach (var p in Model.Profesionales)
+                        {
+                            <option value="@p.Value" selected="@(p.Value == Model.ProfesionalId?.ToString())">@p.Text</option>
+                        }
+                    </select>
+                    @if (Model.ProfesionalId.HasValue)
+                    {
+                        <a href="/Reportes/Enfermeria?periodo=@periodo" class="btn-icon" title="Quitar filtro">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+
+        <div id="rangoPersonalizado" class="reporte-rango @(periodo == "personalizado" ? "" : "d-none")">
+            <input type="date" name="desde" class="form-control form-control-sm reporte-date"
+                   value="@Model.Desde.ToString("yyyy-MM-dd")" />
+            <span class="reporte-rango-sep">al</span>
+            <input type="date" name="hasta" class="form-control form-control-sm reporte-date"
+                   value="@Model.Hasta.ToString("yyyy-MM-dd")" />
+            <button type="submit" class="btn-reporte-aplicar">Aplicar</button>
+        </div>
+        <input type="hidden" name="periodo" id="inputPeriodo" value="@periodo" />
+    </div>
+</form>
+
+<!-- ENCABEZADO -->
+<div class="reporte-header mb-4">
+    <div>
+        <h4 class="page-title">Reporte — Enfermería</h4>
+        <p class="page-sub">
+            <i class="bi bi-calendar3"></i> @Model.PeriodoLabel
+            @if (!string.IsNullOrEmpty(Model.InstitucionNombre))
+            {
+                <span class="reporte-sub-sep">·</span><span>@Model.InstitucionNombre</span>
+            }
+            @if (!string.IsNullOrEmpty(Model.ProfesionalNombre))
+            {
+                <span class="reporte-sub-sep">·</span><span>@Model.ProfesionalNombre</span>
+            }
+        </p>
+    </div>
+    <a href="@exportUrl" class="btn-exportar-excel">
+        <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+    </a>
+</div>
+
+<!-- RESUMEN -->
+<div class="reporte-stats mb-4">
+    <div class="reporte-stat-card">
+        <div class="reporte-stat-num">@Model.TotalAtenciones</div>
+        <div class="reporte-stat-label">Atenciones</div>
+    </div>
+    <div class="reporte-stat-card">
+        <div class="reporte-stat-num">@Model.PacientesUnicos</div>
+        <div class="reporte-stat-label">Pacientes únicos</div>
+    </div>
+    <div class="reporte-stat-card">
+        <div class="reporte-stat-num">@Model.TotalPrestaciones</div>
+        <div class="reporte-stat-label">Prestaciones</div>
+    </div>
+    <div class="reporte-stat-card reporte-stat-os">
+        <div class="reporte-stat-num">@Model.PorcentajeSinOS%</div>
+        <div class="reporte-stat-label">Sin Obra Social</div>
+        <div class="reporte-stat-sub">@Model.TotalSinOS de @Model.TotalAtenciones</div>
+    </div>
+    <div class="reporte-stat-card">
+        <div class="reporte-stat-num">@Model.PorcentajeEmbarazadas%</div>
+        <div class="reporte-stat-label">Embarazadas</div>
+        <div class="reporte-stat-sub">@Model.TotalEmbarazadas pacientes</div>
+    </div>
+</div>
+
+@if (Model.TotalAtenciones == 0)
+{
+    <div class="reporte-empty">
+        <i class="bi bi-bar-chart-line"></i>
+        <p>No hay atenciones en el período seleccionado.</p>
+    </div>
+}
+else
+{
+    <div class="form-card mb-4">
+        <div class="reporte-card-title">Actividad en el tiempo</div>
+        <canvas id="chartActividad" height="90"></canvas>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="form-card h-100">
+                <div class="reporte-card-title">Tipo de atención</div>
+                <div class="reporte-donut-wrap"><canvas id="chartTipo"></canvas></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-card h-100">
+                <div class="reporte-card-title">Cobertura de salud</div>
+                <div class="reporte-donut-wrap"><canvas id="chartOS"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-5">
+            <div class="form-card h-100">
+                <div class="reporte-card-title">Distribución por sexo</div>
+                <div class="reporte-donut-wrap"><canvas id="chartSexo"></canvas></div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="form-card h-100">
+                <div class="reporte-card-title">Franjas etarias</div>
+                <canvas id="chartEdad" height="180"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-card mb-4">
+        <div class="reporte-card-title">Top 10 prestaciones</div>
+        <canvas id="chartTop10" height="220"></canvas>
+    </div>
+
+    @if (esDirectorOAdmin && Model.PorProfesional.Any())
+    {
+        <div class="form-card mb-4">
+            <div class="reporte-card-title">Actividad por profesional</div>
+            <table class="table-app">
+                <thead>
+                    <tr>
+                        <th>Profesional</th>
+                        <th class="text-center">Atenciones</th>
+                        <th class="text-center">% Ambulatorio</th>
+                        <th class="text-center">% Sin OS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.PorProfesional)
+                    {
+                        <tr>
+                            <td style="color:var(--content-text)">@p.Nombre</td>
+                            <td class="text-center" style="color:var(--content-text)">@p.Atenciones</td>
+                            <td class="text-center"><span class="badge-pct">@p.PctAmbulatorio%</span></td>
+                            <td class="text-center"><span class="badge-pct badge-pct-os">@p.PctSinOS%</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/reportes.js"></script>
+}

@@ -1,0 +1,50 @@
+@model List<AtencionesApp.Models.Entities.Institucion>
+@{
+    ViewData["Title"] = "Seleccionar Institución";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seleccionar Institución — Atenciones de Salud</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f1f5f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; }
+        .sel-card { background: #fff; border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 480px; box-shadow: 0 8px 32px rgba(0,0,0,0.10); }
+        .sel-logo { width: 52px; height: 52px; border-radius: 14px; background: rgba(124,106,247,0.12); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 1.5rem; color: #7c6af7; }
+        .sel-title { font-size: 1.2rem; font-weight: 700; color: #1e293b; text-align: center; margin-bottom: 4px; }
+        .sel-sub { font-size: 0.85rem; color: #64748b; text-align: center; margin-bottom: 24px; }
+        .inst-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px; cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s; margin-bottom: 8px; }
+        .inst-btn:hover { border-color: #7c6af7; background: rgba(124,106,247,0.04); }
+        .inst-nombre { font-size: 0.9rem; font-weight: 600; color: #1e293b; }
+        .inst-tipo { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <div class="sel-card">
+        <div class="sel-logo"><i class="bi bi-hospital"></i></div>
+        <div class="sel-title">Seleccioná tu institución</div>
+        <div class="sel-sub">¿En qué efector vas a trabajar hoy?</div>
+
+        @foreach (var inst in Model)
+        {
+            <form method="post" action="/Account/ConfirmarInstitucion">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="institucionId" value="@inst.Id" />
+                <button type="submit" class="inst-btn">
+                    <i class="bi bi-building-fill" style="color: #7c6af7; font-size: 1.1rem; flex-shrink: 0;"></i>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="inst-nombre">@inst.Nombre</div>
+                        <div class="inst-tipo">@inst.Tipologia — @inst.Dependencia</div>
+                    </div>
+                    <i class="bi bi-chevron-right" style="color: #cbd5e1; flex-shrink: 0;"></i>
+                </button>
+            </form>
+        }
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

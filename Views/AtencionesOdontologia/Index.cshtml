@@ -73,7 +73,7 @@ else
                             <a href="/AtencionesOdontologia/Details/@a.Id" class="btn-accion-outline" title="Ver">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            @if (rol == "Administrador" || rol == "Odontólogo")
+                            @if (rol == "Administrador" || (rol == "Odontólogo" && a.Fecha.Date == DateTime.Today))
                             {
                                 <a href="/AtencionesOdontologia/Edit/@a.Id" class="btn-accion-outline" title="Editar">
                                     <i class="bi bi-pencil"></i>

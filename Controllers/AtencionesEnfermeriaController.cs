@@ -97,6 +97,10 @@ using AtencionesApp.Models.Data;
               return View(vm);
           }
 
+          var institucionId = HttpContext.Session.GetInt32("InstitucionActivaId");
+          if (institucionId == null)
+              return RedirectToAction("SeleccionarInstitucion", "Account");
+
           var paciente = await _db.Pacientes.FindAsync(vm.PacienteId);
           var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -108,7 +112,7 @@ using AtencionesApp.Models.Data;
           {
               Fecha = ahora,
               PacienteId = vm.PacienteId,
-              InstitucionId = 1,   // TODO: institución activa de sesión
+              InstitucionId = institucionId.Value,
               UsuarioId = userId,
               TipoAtencion = vm.TipoAtencion,
               Edad = edad,
@@ -149,6 +153,12 @@ using AtencionesApp.Models.Data;
           var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
           if (rol == "Enfermero" && atencion.UsuarioId != userId)
               return Forbid();
+
+          if (rol != "Administrador" && atencion.Fecha.Date != DateTime.Today)
+          {
+              TempData["Error"] = "Solo se pueden editar atenciones del día. Para modificar cargas de fechas anteriores, contactá a un administrador.";
+              return RedirectToAction(nameof(Details), new { id });
+          }
 
           var vm = new AtencionEnfermeriaFormViewModel
           {
@@ -204,6 +214,12 @@ using AtencionesApp.Models.Data;
           var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
           if (rol == "Enfermero" && atencion.UsuarioId != userId)
               return Forbid();
+
+          if (rol != "Administrador" && atencion.Fecha.Date != DateTime.Today)
+          {
+              TempData["Error"] = "Solo se pueden editar atenciones del día. Para modificar cargas de fechas anteriores, contactá a un administrador.";
+              return RedirectToAction(nameof(Details), new { id });
+          }
 
           var paciente = await _db.Pacientes.FindAsync(atencion.PacienteId);
 

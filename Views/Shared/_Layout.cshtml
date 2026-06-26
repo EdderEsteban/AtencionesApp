@@ -29,12 +29,35 @@
             </div>
         </div>
 
+        @{
+            var instNombre = Context.Session.GetString("InstitucionActivaNombre");
+            var instId = Context.Session.GetInt32("InstitucionActivaId");
+            var rolActual = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+            var esAdmin = rolActual == "Administrador";
+            var esDirector = rolActual == "Director";
+            var esEnfermero = rolActual == "Enfermero";
+            var esOdontologo = rolActual == "Odontólogo";
+        }
         <div class="sidebar-inst">
             <div class="sidebar-inst-label">Institución activa</div>
-            <div class="sidebar-inst-name">Hospital Ramón Carrillo</div>
-            <button class="sidebar-inst-btn">
-                <i class="bi bi-arrow-left-right"></i> Cambiar institución
-            </button>
+            @if (esAdmin && instNombre == null)
+            {
+                <div class="sidebar-inst-name sidebar-inst-global">
+                    <i class="bi bi-globe2"></i> Vista global
+                </div>
+            }
+            else
+            {
+                <div class="sidebar-inst-name" title="@instNombre">@instNombre</div>
+            }
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                var urlCambio = esAdmin ? "/Account/SeleccionarInstitucionAdmin" : "/Account/SeleccionarInstitucion";
+                <a href="@urlCambio" class="sidebar-inst-btn">
+                    <i class="bi bi-arrow-left-right"></i>
+                    @(esAdmin && instNombre == null ? "Seleccionar efector" : "Cambiar institución")
+                </a>
+            }
         </div>
 
         <div class="sidebar-section-label">Principal</div>
@@ -46,19 +69,29 @@
         </a>
 
         <div class="sidebar-divider"></div>
-        <div class="sidebar-section-label">Atenciones</div>
-        <a href="/AtencionesEnfermeria" class="sidebar-nav-item">
-            <i class="bi bi-heart-pulse"></i> Enfermería
-        </a>
-        <a href="/AtencionesOdontologia" class="sidebar-nav-item">
-            <i class="bi bi-hospital"></i> Odontología
-        </a>
 
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-section-label">Sistema</div>
-        <a href="#" class="sidebar-nav-item">
-            <i class="bi bi-gear"></i> Administración
-        </a>
+        <div class="sidebar-section-label">Atenciones</div>
+        @if (esAdmin || esDirector || esEnfermero)
+        {
+            <a href="/AtencionesEnfermeria" class="sidebar-nav-item">
+                <i class="bi bi-heart-pulse"></i> Enfermería
+            </a>
+        }
+        @if (esAdmin || esDirector || esOdontologo)
+        {
+            <a href="/AtencionesOdontologia" class="sidebar-nav-item">
+                <i class="bi bi-hospital"></i> Odontología
+            </a>
+        }
+
+        @if (esAdmin)
+        {
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-section-label">Sistema</div>
+            <a href="/Administracion/Usuarios" class="sidebar-nav-item">
+                <i class="bi bi-gear"></i> Administración
+            </a>
+        }
     </aside>
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>

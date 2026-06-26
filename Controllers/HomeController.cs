@@ -26,6 +26,8 @@ public class HomeController : Controller
     {
         var rol = User.FindFirstValue(ClaimTypes.Role) ?? "";
         var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        var instId = HttpContext.Session.GetInt32("InstitucionActivaId");
+        var instNombre = HttpContext.Session.GetString("InstitucionActivaNombre");
 
         var hoy = DateTime.Today;
         var hace7 = hoy.AddDays(-6);
@@ -146,45 +148,46 @@ mes.Month)?.Count ?? 0;
         }
         else // Administrador o Director
         {
-            vm.TituloBarras = "Actividad semanal — Enfermería vs Odontología";
+            var scope = instId.HasValue ? instNombre : "todos los efectores";
+            vm.TituloBarras = $"Actividad semanal — Enfermería vs Odontología";
             vm.TituloDonut = "Atenciones por servicio";
-            vm.TituloLinea = "Evolución mensual total";
-            vm.TituloTop10 = "Top 10 prestaciones";
+            vm.TituloLinea = $"Evolución mensual — {scope}";
+            vm.TituloTop10 = $"Top 10 prestaciones — {scope}";
 
             var rawEnf7 = await _context.AtencionesEnfermeria
-                .Where(a => a.Fecha >= hace7)
+                .Where(a => a.Fecha >= hace7 && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => a.Fecha.Date)
                 .Select(g => new { Fecha = g.Key, Count = g.Count() })
                 .ToListAsync();
 
             var rawOdo7 = await _context.AtencionesOdontologia
-                .Where(a => a.Fecha >= hace7)
+                .Where(a => a.Fecha >= hace7 && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => a.Fecha.Date)
                 .Select(g => new { Fecha = g.Key, Count = g.Count() })
                 .ToListAsync();
 
             vm.SerieEnfermeria = Enumerable.Range(0, 7)
-                .Select(i => rawEnf7.FirstOrDefault(x => x.Fecha == hoy.AddDays(i - 6))?.Count ??
-0)
+                .Select(i => rawEnf7.FirstOrDefault(x => x.Fecha == hoy.AddDays(i - 6))?.Count ?? 0)
                 .ToList();
             vm.SerieOdontologia = Enumerable.Range(0, 7)
-                .Select(i => rawOdo7.FirstOrDefault(x => x.Fecha == hoy.AddDays(i - 6))?.Count ??
-0)
+                .Select(i => rawOdo7.FirstOrDefault(x => x.Fecha == hoy.AddDays(i - 6))?.Count ?? 0)
                 .ToList();
 
-            var totEnf = await _context.AtencionesEnfermeria.CountAsync();
-            var totOdo = await _context.AtencionesOdontologia.CountAsync();
+            var totEnf = await _context.AtencionesEnfermeria
+                .CountAsync(a => !instId.HasValue || a.InstitucionId == instId);
+            var totOdo = await _context.AtencionesOdontologia
+                .CountAsync(a => !instId.HasValue || a.InstitucionId == instId);
             vm.DonutLabels = new List<string> { "Enfermería", "Odontología" };
             vm.DonutValores = new List<int> { totEnf, totOdo };
 
             var raw6mEnf = await _context.AtencionesEnfermeria
-                .Where(a => a.Fecha >= inicioMes6)
+                .Where(a => a.Fecha >= inicioMes6 && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => new { a.Fecha.Year, a.Fecha.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
             var raw6mOdo = await _context.AtencionesOdontologia
-                .Where(a => a.Fecha >= inicioMes6)
+                .Where(a => a.Fecha >= inicioMes6 && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => new { a.Fecha.Year, a.Fecha.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
                 .ToListAsync();
@@ -193,19 +196,19 @@ mes.Month)?.Count ?? 0;
                 .Select(i =>
                 {
                     var mes = hoy.AddMonths(i - 5);
-                    var cEnf = raw6mEnf.FirstOrDefault(x => x.Year == mes.Year && x.Month ==
-mes.Month)?.Count ?? 0;
-                    var cOdo = raw6mOdo.FirstOrDefault(x => x.Year == mes.Year && x.Month ==
-mes.Month)?.Count ?? 0;
+                    var cEnf = raw6mEnf.FirstOrDefault(x => x.Year == mes.Year && x.Month == mes.Month)?.Count ?? 0;
+                    var cOdo = raw6mOdo.FirstOrDefault(x => x.Year == mes.Year && x.Month == mes.Month)?.Count ?? 0;
                     return cEnf + cOdo;
                 }).ToList();
 
             var prestEnf = await _context.PrestacionesEnfermeria
+                .Where(p => !instId.HasValue || p.Atencion.InstitucionId == instId)
                 .GroupBy(p => p.TipoPrestacion.NombrePrestacion)
                 .Select(g => new { Nombre = g.Key, Total = g.Sum(x => x.Cantidad) })
                 .ToListAsync();
 
             var prestOdo = await _context.PrestacionesOdontologia
+                .Where(p => !instId.HasValue || p.Atencion.InstitucionId == instId)
                 .GroupBy(p => p.TipoPrestacion.NombrePrestacion)
                 .Select(g => new { Nombre = g.Key, Total = g.Sum(x => x.Cantidad) })
                 .ToListAsync();

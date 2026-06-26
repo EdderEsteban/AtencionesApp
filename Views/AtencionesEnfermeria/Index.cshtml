@@ -72,7 +72,7 @@ else
                             <a href="/AtencionesEnfermeria/Details/@a.Id" class="btn-table" title="Ver">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            @if (rol == "Administrador" || rol == "Enfermero")
+                            @if (rol == "Administrador" || (rol == "Enfermero" && a.Fecha.Date == DateTime.Today))
                             {
                                 <a href="/AtencionesEnfermeria/Edit/@a.Id" class="btn-table" title="Editar">
                                     <i class="bi bi-pencil"></i>

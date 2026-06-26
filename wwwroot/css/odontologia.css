@@ -85,6 +85,18 @@
 .cpo-form-group { display: flex; flex-direction: column; gap: 4px; }
 .cpo-input { text-align: center; font-size: 0.9rem; font-weight: 600; }
 
+/* forma del campo CPO en formulario (color viene de site.css) */
+.cpo-form-group.cpo-c,
+.cpo-form-group.cpo-p,
+.cpo-form-group.cpo-o,
+.cpo-form-group.cpo-tc,
+.cpo-form-group.cpo-te,
+.cpo-form-group.cpo-to { border-radius: 8px; padding: 6px 8px; }
+
+@media (max-width: 576px) {
+    .cpo-form-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ── BOTONES DEL FORMULARIO ── */
 .form-actions-atencion {
     display: flex;
@@ -112,10 +124,20 @@
 
 .btn-cancelar-atencion {
     padding: 12px 20px;
-    color: var(--sidebar-text);
+    color: var(--content-text);
     text-decoration: none;
     font-size: 0.9rem;
+    font-weight: 500;
     border-radius: 8px;
-    transition: background 0.15s;
+    border: 1.5px solid var(--navbar-border);
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
 }
-.btn-cancelar-atencion:hover { background: var(--sidebar-hover); color: var(--content-text); }
+.btn-cancelar-atencion:hover {
+    background: var(--btn-icon-hover);
+    color: var(--content-text);
+    border-color: var(--content-text);
+    opacity: 0.85;
+}
+[data-bs-theme="dark"] .btn-cancelar-atencion {
+    border-color: rgba(255, 255, 255, 0.22);
+}
