@@ -27,10 +27,22 @@ using AtencionesApp.Models.Data;
               .AsQueryable();
 
           var rol = User.FindFirstValue(ClaimTypes.Role);
+          var instId = HttpContext.Session.GetInt32("InstitucionActivaId");
           if (rol == "Enfermero")
           {
               var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
               query = query.Where(a => a.UsuarioId == userId);
+              if (instId.HasValue)
+                  query = query.Where(a => a.InstitucionId == instId);
+          }
+          else if (rol == "Administrador" || rol == "Director")
+          {
+              if (instId.HasValue)
+                  query = query.Where(a => a.InstitucionId == instId);
+          }
+          else
+          {
+              return Forbid();
           }
 
           if (!string.IsNullOrWhiteSpace(q))

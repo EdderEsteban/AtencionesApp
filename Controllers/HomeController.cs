@@ -52,7 +52,8 @@ public class HomeController : Controller
             vm.TituloTop10 = "Mis top 10 prestaciones";
 
             var rawEnf7 = await _context.AtencionesEnfermeria
-                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= hace7)
+                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= hace7
+                            && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => a.Fecha.Date)
                 .Select(g => new { Fecha = g.Key, Count = g.Count() })
                 .ToListAsync();
@@ -63,14 +64,17 @@ public class HomeController : Controller
                 .ToList();
 
             var totAmb = await _context.AtencionesEnfermeria
-                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoAtencion == 1);
+                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoAtencion == 1
+                            && (!instId.HasValue || a.InstitucionId == instId));
             var totInt = await _context.AtencionesEnfermeria
-                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoAtencion == 2);
+                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoAtencion == 2
+                            && (!instId.HasValue || a.InstitucionId == instId));
             vm.DonutLabels = new List<string> { "Ambulatorio", "Internado" };
             vm.DonutValores = new List<int> { totAmb, totInt };
 
             var raw6mEnf = await _context.AtencionesEnfermeria
-                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= inicioMes6)
+                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= inicioMes6
+                            && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => new { a.Fecha.Year, a.Fecha.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
                 .ToListAsync();
@@ -84,7 +88,8 @@ mes.Month)?.Count ?? 0;
                 }).ToList();
 
             var top10Enf = await _context.PrestacionesEnfermeria
-                .Where(p => p.Atencion.UsuarioId == usuarioId)
+                .Where(p => p.Atencion.UsuarioId == usuarioId
+                            && (!instId.HasValue || p.Atencion.InstitucionId == instId))
                 .GroupBy(p => p.TipoPrestacion.NombrePrestacion)
                 .Select(g => new { Nombre = g.Key, Total = g.Sum(x => x.Cantidad) })
                 .OrderByDescending(x => x.Total)
@@ -103,7 +108,8 @@ mes.Month)?.Count ?? 0;
             vm.TituloTop10 = "Mis top 10 prestaciones";
 
             var rawOdo7 = await _context.AtencionesOdontologia
-                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= hace7)
+                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= hace7
+                            && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => a.Fecha.Date)
                 .Select(g => new { Fecha = g.Key, Count = g.Count() })
                 .ToListAsync();
@@ -114,14 +120,17 @@ mes.Month)?.Count ?? 0;
                 .ToList();
 
             var totPrimera = await _context.AtencionesOdontologia
-                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoConsulta == 1);
+                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoConsulta == 1
+                            && (!instId.HasValue || a.InstitucionId == instId));
             var totUlterior = await _context.AtencionesOdontologia
-                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoConsulta == 2);
+                .CountAsync(a => a.UsuarioId == usuarioId && a.TipoConsulta == 2
+                            && (!instId.HasValue || a.InstitucionId == instId));
             vm.DonutLabels = new List<string> { "Primera vez", "Ulterior" };
             vm.DonutValores = new List<int> { totPrimera, totUlterior };
 
             var raw6mOdo = await _context.AtencionesOdontologia
-                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= inicioMes6)
+                .Where(a => a.UsuarioId == usuarioId && a.Fecha >= inicioMes6
+                            && (!instId.HasValue || a.InstitucionId == instId))
                 .GroupBy(a => new { a.Fecha.Year, a.Fecha.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
                 .ToListAsync();
@@ -135,7 +144,8 @@ mes.Month)?.Count ?? 0;
                 }).ToList();
 
             var top10Odo = await _context.PrestacionesOdontologia
-                .Where(p => p.Atencion.UsuarioId == usuarioId)
+                .Where(p => p.Atencion.UsuarioId == usuarioId
+                            && (!instId.HasValue || p.Atencion.InstitucionId == instId))
                 .GroupBy(p => p.TipoPrestacion.NombrePrestacion)
                 .Select(g => new { Nombre = g.Key, Total = g.Sum(x => x.Cantidad) })
                 .OrderByDescending(x => x.Total)

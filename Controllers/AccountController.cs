@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AtencionesApp.Controllers;
 
@@ -15,11 +17,17 @@ public class AccountController : Controller
 {
     private readonly AppDbContext _context;
     private readonly IPasswordHasher<Usuario> _passwordHasher;
+    private readonly IMemoryCache _cache;
 
-    public AccountController(AppDbContext context, IPasswordHasher<Usuario> passwordHasher)
+    // Lockout: tras MaxIntentos fallidos en la ventana, se bloquea el email.
+    private const int MaxIntentos = 5;
+    private static readonly TimeSpan VentanaLockout = TimeSpan.FromMinutes(15);
+
+    public AccountController(AppDbContext context, IPasswordHasher<Usuario> passwordHasher, IMemoryCache cache)
     {
         _context = context;
         _passwordHasher = passwordHasher;
+        _cache = cache;
     }
 
     [HttpGet]
@@ -29,10 +37,21 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
             return View(model);
+
+        var emailKey = "login-fails:" + (model.Email ?? "").Trim().ToLowerInvariant();
+
+        // ¿Cuenta bloqueada por intentos fallidos?
+        if (_cache.TryGetValue<int>(emailKey, out var fallos) && fallos >= MaxIntentos)
+        {
+            ViewBag.Error = "Demasiados intentos fallidos. Esperá unos minutos e intentá de nuevo.";
+            return View(model);
+        }
 
         var usuario = await _context.Usuarios
             .Include(u => u.Rol)
@@ -41,6 +60,7 @@ public class AccountController : Controller
 
         if (usuario == null)
         {
+            RegistrarIntentoFallido(emailKey, fallos);
             ViewBag.Error = "Email o contraseña incorrectos";
             return View(model);
         }
@@ -48,9 +68,13 @@ public class AccountController : Controller
         var resultado = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, model.Password);
         if (resultado == PasswordVerificationResult.Failed)
         {
+            RegistrarIntentoFallido(emailKey, fallos);
             ViewBag.Error = "Email o contraseña incorrectos";
             return View(model);
         }
+
+        // Login correcto: limpiar el contador de fallos
+        _cache.Remove(emailKey);
 
         var claims = new List<Claim>
         {
@@ -93,6 +117,12 @@ public class AccountController : Controller
 
         // Múltiples instituciones: mostrar selector
         return RedirectToAction("SeleccionarInstitucion");
+    }
+
+    // Registra un intento fallido en cache; expira al cabo de la ventana de lockout.
+    private void RegistrarIntentoFallido(string emailKey, int fallosActuales)
+    {
+        _cache.Set(emailKey, fallosActuales + 1, VentanaLockout);
     }
 
     [Authorize]

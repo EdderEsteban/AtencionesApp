@@ -37,6 +37,10 @@
             var esDirector = rolActual == "Director";
             var esEnfermero = rolActual == "Enfermero";
             var esOdontologo = rolActual == "Odontólogo";
+
+            var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+            var act = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+            string Nav(bool activo) => activo ? "sidebar-nav-item active" : "sidebar-nav-item";
         }
         <div class="sidebar-inst">
             <div class="sidebar-inst-label">Institución activa</div>
@@ -61,10 +65,10 @@
         </div>
 
         <div class="sidebar-section-label">Principal</div>
-        <a href="/Home/Index" class="sidebar-nav-item active">
+        <a href="/Home/Index" class="@Nav(ctrl == "Home")">
             <i class="bi bi-grid"></i> Inicio
         </a>
-        <a href="/Pacientes" class="sidebar-nav-item">
+        <a href="/Pacientes" class="@Nav(ctrl == "Pacientes")">
             <i class="bi bi-people"></i> Pacientes
         </a>
 
@@ -73,14 +77,30 @@
         <div class="sidebar-section-label">Atenciones</div>
         @if (esAdmin || esDirector || esEnfermero)
         {
-            <a href="/AtencionesEnfermeria" class="sidebar-nav-item">
+            <a href="/AtencionesEnfermeria" class="@Nav(ctrl == "AtencionesEnfermeria")">
                 <i class="bi bi-heart-pulse"></i> Enfermería
             </a>
         }
         @if (esAdmin || esDirector || esOdontologo)
         {
-            <a href="/AtencionesOdontologia" class="sidebar-nav-item">
+            <a href="/AtencionesOdontologia" class="@Nav(ctrl == "AtencionesOdontologia")">
                 <i class="bi bi-hospital"></i> Odontología
+            </a>
+        }
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section-label">Reportes</div>
+        @if (esAdmin || esDirector || esEnfermero)
+        {
+            <a href="/Reportes/Enfermeria" class="@Nav(ctrl == "Reportes" && act == "Enfermeria")">
+                <i class="bi bi-clipboard-data"></i> Enfermería
+            </a>
+        }
+        @if (esAdmin || esDirector || esOdontologo)
+        {
+            <a href="/Reportes/Odontologia" class="@Nav(ctrl == "Reportes" && act == "Odontologia")">
+                <i class="bi bi-clipboard2-pulse"></i> Odontología
             </a>
         }
 
@@ -88,7 +108,7 @@
         {
             <div class="sidebar-divider"></div>
             <div class="sidebar-section-label">Sistema</div>
-            <a href="/Administracion/Usuarios" class="sidebar-nav-item">
+            <a href="/Administracion/Usuarios" class="@Nav(ctrl == "Administracion")">
                 <i class="bi bi-gear"></i> Administración
             </a>
         }

@@ -11,9 +11,12 @@
     <link rel="stylesheet" href="~/css/reportes.css" />
 }
 
-<div hidden id="reporteData" data-labels-actividad='@Html.Raw(Json.Serialize(Model.LabelsActividad))'
-     data-serie-actividad='@Html.Raw(Json.Serialize(Model.SerieActividad))' data-ambulatorio="@Model.TotalAmbulatorio"
-     data-internado="@Model.TotalInternado" data-con-os="@Model.TotalConOS" data-sin-os="@Model.TotalSinOS"
+<div hidden id="reporteData" data-accent="enf"
+     data-labels-actividad='@Html.Raw(Json.Serialize(Model.LabelsActividad))'
+     data-serie-actividad='@Html.Raw(Json.Serialize(Model.SerieActividad))'
+     data-tipo-labels='@Html.Raw(Json.Serialize(new[] { "Ambulatorio", "Internado" }))'
+     data-tipo-valores='@Html.Raw(Json.Serialize(new[] { Model.TotalAmbulatorio, Model.TotalInternado }))'
+     data-con-os="@Model.TotalConOS" data-sin-os="@Model.TotalSinOS"
      data-sexo-m="@Model.SexoM" data-sexo-f="@Model.SexoF" data-sexo-no-esp="@Model.SexoNoEsp"
      data-labels-edad='@Html.Raw(Json.Serialize(Model.LabelsEdad))'
      data-serie-edad='@Html.Raw(Json.Serialize(Model.SerieEdad))'
