@@ -144,9 +144,17 @@ La app queda disponible en `http://localhost:5237`.
 
 ## 📸 Capturas
 
-> _Próximamente — agregar imágenes de la ficha de paciente, el odontograma y los dashboards._
+### Dashboard
+![Dashboard](docs/Captura%20Dashboard.png)
 
-<!-- Ejemplo: ![Dashboard](docs/dashboard.png) -->
+### Odontograma interactivo
+![Odontograma](docs/Odontograma.png)
+
+### Carga de atención — Enfermería
+![Ficha de atención de Enfermería](docs/Ficha%20de%20atencion%20Enfermeria.png)
+
+### Carga de atención — Odontología
+![Ficha de atención Odontológica](docs/Ficha%20de%20atencion%20Odontologica.png)
 
 ---
 
