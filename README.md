@@ -34,6 +34,7 @@ Aplicación pensada para el día a día de los efectores de salud pública:
 - 📊 **Dashboards por rol** con Chart.js (actividad semanal, distribución, tendencia mensual, top 10 prestaciones).
 - 📈 **Módulo de reportes** (enfermería / odontología) con filtros por período y profesional, y **exportación a Excel** (ClosedXML).
 - ⚙️ **Administración**: gestión de usuarios (asignación multi-institución) y catálogos de prestaciones.
+- 👤 **Mi Perfil**: cada usuario cambia su email y/o contraseña desde la navbar (requiere confirmar con la contraseña actual).
 - 🌗 **Tema claro/oscuro**, layout responsive con sidebar + navbar.
 
 ### API REST (para app móvil)
@@ -85,7 +86,9 @@ Aplicación pensada para el día a día de los efectores de salud pública:
 |--------|------|-------------|
 | `POST` | `/api/auth/login` | Login → token JWT + instituciones del usuario |
 | `POST` | `/api/auth/institucion` | Selecciona institución activa → token nuevo |
+| `PUT`  | `/api/auth/perfil` | Actualiza email/contraseña propios → token renovado |
 | `GET`  | `/api/pacientes?q=` | Búsqueda de pacientes (DNI / nombre / apellido) |
+| `POST` | `/api/pacientes` | Alta de paciente (Enfermero/Odontólogo, ej. sync offline del móvil) |
 | `GET`  | `/api/pacientes/{id}` | Ficha + historia clínica completa |
 | `GET`  | `/api/atenciones-enfermeria/tipos-prestacion` | Catálogo para el formulario |
 | `POST` | `/api/atenciones-enfermeria` | Carga de atención de enfermería |

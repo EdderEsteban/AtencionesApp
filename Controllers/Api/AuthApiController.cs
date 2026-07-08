@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -130,8 +131,11 @@ public class AuthApiController : ControllerBase
 
         if (usuario == null) return Unauthorized();
 
-        if (string.IsNullOrWhiteSpace(req.Email))
-            return BadRequest(new { error = "El email es obligatorio." });
+        if (string.IsNullOrWhiteSpace(req.Email) || !new EmailAddressAttribute().IsValid(req.Email))
+            return BadRequest(new { error = "El email es obligatorio y debe ser válido." });
+
+        if (!string.IsNullOrWhiteSpace(req.ContrasenaNueva) && req.ContrasenaNueva.Length < 6)
+            return BadRequest(new { error = "La nueva contraseña debe tener al menos 6 caracteres." });
 
         if (_passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, req.ContrasenaActual) == PasswordVerificationResult.Failed)
             return BadRequest(new { error = "La contraseña actual es incorrecta." });
