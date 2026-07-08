@@ -1,0 +1,62 @@
+@model AtencionesApp.Models.ViewModels.MiPerfilViewModel
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/administracion.css" />
+}
+
+<div class="page-header mb-4">
+    <div>
+        <h4 class="page-title">Mi Perfil</h4>
+        <p class="page-sub">@Model.NombreCompleto — @Model.Rol</p>
+    </div>
+</div>
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alert-admin-ok mb-3">
+        <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+    </div>
+}
+
+<div class="form-card">
+    <form method="post" action="/Account/MiPerfil">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label-small">EMAIL</label>
+                <input asp-for="Email" type="email" class="form-control form-control-app" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6"></div>
+
+            <div class="col-md-6">
+                <label class="form-label-small">CONTRASEÑA ACTUAL <span class="form-hint-inline">(requerida para confirmar)</span></label>
+                <input asp-for="ContrasenaActual" type="password" class="form-control form-control-app" />
+                <span asp-validation-for="ContrasenaActual" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6"></div>
+
+            <div class="col-md-6">
+                <label class="form-label-small">NUEVA CONTRASEÑA <span class="form-hint-inline">(dejar vacío para no cambiarla)</span></label>
+                <input asp-for="ContrasenaNueva" type="password" class="form-control form-control-app"
+                       placeholder="Solo si desea cambiarla" />
+                <span asp-validation-for="ContrasenaNueva" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-small">CONFIRMAR NUEVA CONTRASEÑA</label>
+                <input asp-for="ConfirmarContrasenaNueva" type="password" class="form-control form-control-app"
+                       placeholder="Repetir nueva contraseña" />
+                <span asp-validation-for="ConfirmarContrasenaNueva" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="form-actions-admin mt-4">
+            <button type="submit" class="btn-admin-primary">
+                <i class="bi bi-check-lg"></i> Guardar cambios
+            </button>
+        </div>
+    </form>
+</div>

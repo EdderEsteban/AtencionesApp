@@ -11,6 +11,13 @@ public class SeleccionInstitucionRequest
     public int InstitucionId { get; set; }
 }
 
+public class ActualizarPerfilRequest
+{
+    public string Email { get; set; } = "";
+    public string ContrasenaActual { get; set; } = "";
+    public string? ContrasenaNueva { get; set; }
+}
+
 public class LoginResponse
 {
     public string Token { get; set; } = "";

@@ -121,13 +121,13 @@
         <button class="btn-hamburger" id="btnHamburger" title="Menú">
             <i class="bi bi-list"></i>
         </button>
-        <div class="navbar-user-info">
+        <a href="/Account/MiPerfil" class="navbar-user-info" style="text-decoration: none; color: inherit;" title="Mi Perfil">
             <div class="navbar-avatar" id="userAvatar"></div>
             <div>
                 <div class="navbar-user-name">@User.Identity?.Name</div>
                 <div class="navbar-user-role">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</div>
             </div>
-        </div>
+        </a>
 
         <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
             <i class="bi bi-sun"></i>

@@ -118,6 +118,59 @@ public class AuthApiController : ControllerBase
         });
     }
 
+    [HttpPut("perfil")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    public async Task<IActionResult> ActualizarPerfil([FromBody] ActualizarPerfilRequest req)
+    {
+        var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var usuario = await _context.Usuarios
+            .Include(u => u.Rol)
+            .Include(u => u.Instituciones)
+            .FirstOrDefaultAsync(u => u.Id == usuarioId && !u.IsDeleted);
+
+        if (usuario == null) return Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(req.Email))
+            return BadRequest(new { error = "El email es obligatorio." });
+
+        if (_passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, req.ContrasenaActual) == PasswordVerificationResult.Failed)
+            return BadRequest(new { error = "La contraseña actual es incorrecta." });
+
+        if (await _context.Usuarios.AnyAsync(u => u.Email == req.Email && u.Id != usuarioId))
+            return BadRequest(new { error = "Ya existe un usuario con ese email." });
+
+        usuario.Email = req.Email.Trim();
+
+        if (!string.IsNullOrWhiteSpace(req.ContrasenaNueva))
+            usuario.PasswordHash = _passwordHasher.HashPassword(usuario, req.ContrasenaNueva);
+
+        await _context.SaveChangesAsync();
+
+        // Mantiene la misma institución activa que ya tenía el token viejo (no la cambia)
+        var institucionIdRaw = User.FindFirst("institucionId")?.Value;
+        int? institucionActivaId = int.TryParse(institucionIdRaw, out var instId) ? instId : null;
+        var institucionActiva = institucionActivaId.HasValue
+            ? usuario.Instituciones.FirstOrDefault(i => i.Id == institucionActivaId.Value)
+            : null;
+
+        var (token, expira) = GenerarToken(usuario, institucionActiva?.Id, institucionActiva?.Nombre);
+
+        return Ok(new LoginResponse
+        {
+            Token = token,
+            ExpiraUtc = expira,
+            UsuarioId = usuario.Id,
+            NombreCompleto = $"{usuario.Nombre} {usuario.Apellido}",
+            Email = usuario.Email,
+            Rol = usuario.Rol.Nombre,
+            RequiereSeleccion = institucionActiva == null && usuario.Instituciones.Count > 1,
+            InstitucionActivaId = institucionActiva?.Id,
+            Instituciones = usuario.Instituciones
+                .Select(i => new InstitucionDto { Id = i.Id, Nombre = i.Nombre })
+                .ToList()
+        });
+    }
+
     // ── Helper: genera el JWT, con institución opcional como claims ──
      private (string token, DateTime expira) GenerarToken(Usuario usuario, int? institucionId, string? institucionNombre)
     {

@@ -2,6 +2,7 @@ using AtencionesApp.Models.Data;
 using AtencionesApp.Models.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AtencionesApp.Models.Entities;
 
 namespace AtencionesApp.Controllers.Api;
 
@@ -41,15 +42,45 @@ public class PacientesApiController : ApiControllerBase
         return Ok(resultado);
     }
 
+    // POST /api/pacientes  → alta de paciente (la usa el sync offline del móvil)
+    [HttpPost]
+    public async Task<IActionResult> Crear([FromBody] CrearPacienteRequest req)
+    {
+        if (Rol != "Enfermero" && Rol != "Odontólogo") return Forbid();
+
+        if (string.IsNullOrWhiteSpace(req.DNI) || string.IsNullOrWhiteSpace(req.Apellido)
+            || string.IsNullOrWhiteSpace(req.Nombre) || string.IsNullOrWhiteSpace(req.Sexo))
+            return BadRequest(new { error = "Completá DNI, apellido, nombre y sexo." });
+
+        var dniExiste = await _context.Pacientes.AnyAsync(p => p.DNI == req.DNI.Trim());
+        if (dniExiste)
+            return BadRequest(new { error = "Ya existe un paciente con ese DNI." });
+
+        var paciente = new Paciente
+        {
+            DNI = req.DNI.Trim(),
+            Apellido = req.Apellido.Trim(),
+            Nombre = req.Nombre.Trim(),
+            FechaNacimiento = req.FechaNacimiento,
+            Sexo = req.Sexo,
+            Domicilio = string.IsNullOrWhiteSpace(req.Domicilio) ? null : req.Domicilio.Trim(),
+            Telefono = string.IsNullOrWhiteSpace(req.Telefono) ? null : req.Telefono.Trim(),
+            ObraSocial = string.IsNullOrWhiteSpace(req.ObraSocial) ? null : req.ObraSocial.Trim()
+        };
+
+        _context.Pacientes.Add(paciente);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(Ficha), new { id = paciente.Id }, new { id = paciente.Id });
+    }
+
     // GET /api/pacientes/{id}  → ficha + historia clínica completa (enf + odo)
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Ficha(int id)
     {
         var p = await _context.Pacientes
-            .Include(x => x.AtencionesEnfermeria).ThenInclude(a => a.Prestaciones).ThenInclude(pr =>
-pr.TipoPrestacion)
-            .Include(x => x.AtencionesOdontologia).ThenInclude(a => a.Prestaciones).ThenInclude(pr =>
-pr.TipoPrestacion)
+            .Include(x => x.AtencionesEnfermeria).ThenInclude(a => a.Prestaciones).ThenInclude(pr => pr.TipoPrestacion)
+            .Include(x => x.AtencionesOdontologia).ThenInclude(a => a.Prestaciones).ThenInclude(pr => pr.TipoPrestacion)
             .Include(x => x.AtencionesOdontologia).ThenInclude(a => a.Diagnostico)
             .FirstOrDefaultAsync(x => x.Id == id);
 

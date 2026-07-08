@@ -211,6 +211,72 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    [Authorize]
+    public async Task<IActionResult> MiPerfil()
+    {
+        var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var usuario = await _context.Usuarios.Include(u => u.Rol).FirstOrDefaultAsync(u => u.Id == usuarioId);
+        if (usuario == null) return NotFound();
+
+        var vm = new MiPerfilViewModel
+        {
+            NombreCompleto = $"{usuario.Apellido}, {usuario.Nombre}",
+            Rol = usuario.Rol.Nombre,
+            Email = usuario.Email
+        };
+        return View(vm);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MiPerfil(MiPerfilViewModel vm)
+    {
+        var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var usuario = await _context.Usuarios.Include(u => u.Rol).FirstOrDefaultAsync(u => u.Id == usuarioId);
+        if (usuario == null) return NotFound();
+
+        vm.NombreCompleto = $"{usuario.Apellido}, {usuario.Nombre}";
+        vm.Rol = usuario.Rol.Nombre;
+
+        if (!ModelState.IsValid)
+            return View(vm);
+
+        var verificacion = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, vm.ContrasenaActual);
+        if (verificacion == PasswordVerificationResult.Failed)
+        {
+            ModelState.AddModelError("ContrasenaActual", "La contraseña actual es incorrecta");
+            return View(vm);
+        }
+
+        if (await _context.Usuarios.AnyAsync(u => u.Email == vm.Email && u.Id != usuarioId))
+        {
+            ModelState.AddModelError("Email", "Ya existe un usuario con ese email");
+            return View(vm);
+        }
+
+        usuario.Email = vm.Email;
+
+        if (!string.IsNullOrWhiteSpace(vm.ContrasenaNueva))
+            usuario.PasswordHash = _passwordHasher.HashPassword(usuario, vm.ContrasenaNueva);
+
+        await _context.SaveChangesAsync();
+
+        // Refrescar la cookie: el claim de email quedaría desactualizado si no se reemite
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+            new Claim(ClaimTypes.Name, $"{usuario.Nombre} {usuario.Apellido}"),
+            new Claim(ClaimTypes.Email, usuario.Email),
+            new Claim(ClaimTypes.Role, usuario.Rol.Nombre)
+        };
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
+        TempData["Exito"] = "Perfil actualizado correctamente";
+        return RedirectToAction(nameof(MiPerfil));
+    }
+
     public async Task<IActionResult> Logout()
     {
         HttpContext.Session.Clear();
