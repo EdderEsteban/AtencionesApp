@@ -1,6 +1,7 @@
 using AtencionesApp.Models.Data;
 using AtencionesApp.Models.Dtos;
 using AtencionesApp.Models.Entities;
+using AtencionesApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,6 +59,14 @@ public class AtencionesOdontologiaApiController : ApiControllerBase
 
         var odo = req.Odontograma ?? new();
 
+        // Estados crudos del odontograma (solo lo distinto de "Sano").
+        var estados = odo.Where(e => e.Estado > 0).Select(e => new OdontogramaEstado
+        {
+            NumeroDiente = e.NumeroDiente,
+            Superficie = e.Superficie,
+            Estado = e.Estado
+        }).ToList();
+
         var atencion = new AtencionOdontologia
         {
             Fecha = ahora,
@@ -76,13 +85,8 @@ public class AtencionesOdontologiaApiController : ApiControllerBase
                 TipoPrestacionId = p.TipoPrestacionId,
                 Cantidad = p.Cantidad
             }).ToList(),
-            ValoracionDental = CalcularCPO(odo),     // ← CPO calculado en el servidor
-            OdontogramaEstados = odo.Where(e => e.Estado > 0).Select(e => new OdontogramaEstado
-            {
-                NumeroDiente = e.NumeroDiente,
-                Superficie = e.Superficie,
-                Estado = e.Estado
-            }).ToList()
+            ValoracionDental = CalculadoraCpo.Calcular(estados),  // ← CPO recalculado en el servidor
+            OdontogramaEstados = estados
         };
 
         if (!req.SinObraSocial && !string.IsNullOrWhiteSpace(req.NuevaObraSocial))
@@ -152,35 +156,6 @@ public class AtencionesOdontologiaApiController : ApiControllerBase
         };
 
         return Ok(dto);
-    }
-
-    // ── CPO/ceo calculado en el servidor (porteado de odontograma.js) ──
-    private static ValoracionDental CalcularCPO(List<OdontogramaEstadoInput> estados)
-    {
-        var v = new ValoracionDental();
-        foreach (var g in estados.GroupBy(e => e.NumeroDiente))
-        {
-            var num = g.Key;
-            var estrella = g.FirstOrDefault(x => x.Superficie == "*");
-            var vals = g.Where(x => x.Estado > 0).Select(x => x.Estado).ToList();
-            bool esPermanente = num <= 48;
-
-            if (esPermanente)
-            {
-                if (estrella?.Estado == 3) { v.PerdidosPerm++; continue; }  // Ausente
-                if (estrella?.Estado == 4) continue;                         // Extr. indicada no cuenta
-                if (vals.Contains(1)) v.CariesPerm++;
-                else if (vals.Any(x => x == 2 || x == 5)) v.ObturadosPerm++;
-            }
-            else // temporario
-            {
-                if (estrella?.Estado == 3) continue;                         // Ausente no cuenta
-                if (estrella?.Estado == 4) { v.ExtraccionTemp++; continue; } // Extr. indicada
-                if (vals.Contains(1)) v.CariesTemp++;
-                else if (vals.Any(x => x == 2 || x == 5)) v.ObturadosTemp++;
-            }
-        }
-        return v;
     }
 
     private static string TurnoTexto(int t) => t switch

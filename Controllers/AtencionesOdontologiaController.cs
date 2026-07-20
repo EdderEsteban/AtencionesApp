@@ -1,6 +1,7 @@
 using AtencionesApp.Models.Data;
 using AtencionesApp.Models.Entities;
 using AtencionesApp.Models.ViewModels;
+using AtencionesApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -160,30 +161,24 @@ public class AtencionesOdontologiaController : Controller
         else if (!vm.SinObraSocial && string.IsNullOrEmpty(paciente!.ObraSocial))
             atencion.SinObraSocial = true;
 
-        if (vm.Valoracion != null)
-        {
-            atencion.ValoracionDental = new ValoracionDental
-            {
-                CariesPerm = vm.Valoracion.CariesPerm,
-                PerdidosPerm = vm.Valoracion.PerdidosPerm,
-                ObturadosPerm = vm.Valoracion.ObturadosPerm,
-                CariesTemp = vm.Valoracion.CariesTemp,
-                ExtraccionTemp = vm.Valoracion.ExtraccionTemp,
-                ObturadosTemp = vm.Valoracion.ObturadosTemp
-            };
-        }
-
+        // Odontograma (solo estados distintos de "Sano") → estados crudos
+        var estados = new List<OdontogramaEstado>();
         if (!string.IsNullOrWhiteSpace(odontogramaJson) && odontogramaJson != "[]")
         {
             var opts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var estados = System.Text.Json.JsonSerializer.Deserialize<List<OdontogramaEstadoItemVM>>(odontogramaJson, opts) ?? new();
-            atencion.OdontogramaEstados = estados.Select(e => new OdontogramaEstado
+            var items = System.Text.Json.JsonSerializer.Deserialize<List<OdontogramaEstadoItemVM>>(odontogramaJson, opts) ?? new();
+            estados = items.Where(e => e.Estado > 0).Select(e => new OdontogramaEstado
             {
                 NumeroDiente = e.NumeroDiente,
                 Superficie = e.Superficie,
                 Estado = e.Estado
             }).ToList();
         }
+        atencion.OdontogramaEstados = estados;
+
+        // CPO/ceo recalculado en el servidor a partir de los estados crudos.
+        // No se confía en vm.Valoracion (el navegador lo calcula solo para mostrar en vivo).
+        atencion.ValoracionDental = CalculadoraCpo.Calcular(estados);
 
         _db.AtencionesOdontologia.Add(atencion);
         await _db.SaveChangesAsync();
@@ -313,43 +308,37 @@ public class AtencionesOdontologiaController : Controller
             Cantidad = p.Cantidad
         }).ToList();
 
-        if (vm.Valoracion != null)
-        {
-            if (atencion.ValoracionDental == null)
-            {
-                atencion.ValoracionDental = new ValoracionDental();
-            }
-            atencion.ValoracionDental.CariesPerm = vm.Valoracion.CariesPerm;
-            atencion.ValoracionDental.PerdidosPerm = vm.Valoracion.PerdidosPerm;
-            atencion.ValoracionDental.ObturadosPerm = vm.Valoracion.ObturadosPerm;
-            atencion.ValoracionDental.CariesTemp = vm.Valoracion.CariesTemp;
-            atencion.ValoracionDental.ExtraccionTemp = vm.Valoracion.ExtraccionTemp;
-            atencion.ValoracionDental.ObturadosTemp = vm.Valoracion.ObturadosTemp;
-        }
-        else if (atencion.ValoracionDental != null)
-        {
-            atencion.ValoracionDental.IsDeleted = true;
-        }
-
-        // Sincronizar estados del odontograma
+        // Odontograma: soft-delete de los estados anteriores y alta de los nuevos
         foreach (var e in atencion.OdontogramaEstados)
             e.IsDeleted = true;
 
+        var nuevosEstados = new List<OdontogramaEstado>();
         if (!string.IsNullOrWhiteSpace(odontogramaJson) && odontogramaJson != "[]")
         {
             var opts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var estados = System.Text.Json.JsonSerializer.Deserialize<List<OdontogramaEstadoItemVM>>(odontogramaJson, opts) ?? new();
-            foreach (var e in estados)
+            var items = System.Text.Json.JsonSerializer.Deserialize<List<OdontogramaEstadoItemVM>>(odontogramaJson, opts) ?? new();
+            nuevosEstados = items.Where(e => e.Estado > 0).Select(e => new OdontogramaEstado
             {
-                _db.OdontogramaEstados.Add(new OdontogramaEstado
-                {
-                    AtencionOdontologiaId = id,
-                    NumeroDiente = e.NumeroDiente,
-                    Superficie = e.Superficie,
-                    Estado = e.Estado
-                });
-            }
+                AtencionOdontologiaId = id,
+                NumeroDiente = e.NumeroDiente,
+                Superficie = e.Superficie,
+                Estado = e.Estado
+            }).ToList();
+            foreach (var e in nuevosEstados)
+                _db.OdontogramaEstados.Add(e);
         }
+
+        // CPO/ceo recalculado en el servidor a partir de los estados nuevos (no se confía en vm.Valoracion).
+        var cpo = CalculadoraCpo.Calcular(nuevosEstados);
+        if (atencion.ValoracionDental == null)
+            atencion.ValoracionDental = new ValoracionDental();
+        atencion.ValoracionDental.IsDeleted = false;
+        atencion.ValoracionDental.CariesPerm = cpo.CariesPerm;
+        atencion.ValoracionDental.PerdidosPerm = cpo.PerdidosPerm;
+        atencion.ValoracionDental.ObturadosPerm = cpo.ObturadosPerm;
+        atencion.ValoracionDental.CariesTemp = cpo.CariesTemp;
+        atencion.ValoracionDental.ExtraccionTemp = cpo.ExtraccionTemp;
+        atencion.ValoracionDental.ObturadosTemp = cpo.ObturadosTemp;
 
         await _db.SaveChangesAsync();
         TempData["Exito"] = "Atención actualizada correctamente";
