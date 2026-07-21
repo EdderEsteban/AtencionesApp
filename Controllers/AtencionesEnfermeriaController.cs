@@ -131,7 +131,7 @@ using AtencionesApp.Models.Data;
               Embarazada = vm.Embarazada,
               SinObraSocial = vm.SinObraSocial,
               Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim(),
-              Prestaciones = vm.Prestaciones.Select(p => new PrestacionEnfermeria
+              Prestaciones = (vm.Prestaciones ?? new()).Select(p => new PrestacionEnfermeria
               {
                   TipoPrestacionId = p.TipoPrestacionId,
                   Cantidad = p.Cantidad
@@ -246,7 +246,7 @@ using AtencionesApp.Models.Data;
               atencion.SinObraSocial = true;
 
           _db.PrestacionesEnfermeria.RemoveRange(atencion.Prestaciones);
-          atencion.Prestaciones = vm.Prestaciones.Select(p => new PrestacionEnfermeria
+          atencion.Prestaciones = (vm.Prestaciones ?? new()).Select(p => new PrestacionEnfermeria
           {
               TipoPrestacionId = p.TipoPrestacionId,
               Cantidad = p.Cantidad

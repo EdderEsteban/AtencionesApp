@@ -9,9 +9,9 @@
     if (Model.FechaNacimiento.DayOfYear > DateTime.Today.DayOfYear) edadActual--;
 
     var timeline = Model.AtencionesEnfermeria
-        .Select(a => (Fecha: a.Fecha, Id: a.Id, Tipo: "E", Enf: a, Odo: (AtencionOdontologia?)null))
+        .Select(a => (Fecha: a.Fecha, Id: a.Id, Tipo: "E", Enf: (AtencionEnfermeria?)a, Odo: (AtencionOdontologia?)null))
         .Concat(Model.AtencionesOdontologia
-            .Select(a => (Fecha: a.Fecha, Id: a.Id, Tipo: "O", Enf: (AtencionEnfermeria?)null, Odo: a)))
+            .Select(a => (Fecha: a.Fecha, Id: a.Id, Tipo: "O", Enf: (AtencionEnfermeria?)null, Odo: (AtencionOdontologia?)a)))
         .OrderByDescending(x => x.Fecha)
         .ThenByDescending(x => x.Id)
         .ToList();

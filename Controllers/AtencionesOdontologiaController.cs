@@ -149,7 +149,7 @@ public class AtencionesOdontologiaController : Controller
             Embarazada = vm.Embarazada,
             SinObraSocial = vm.SinObraSocial,
             Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim(),
-            Prestaciones = vm.Prestaciones.Select(p => new PrestacionOdontologia
+            Prestaciones = (vm.Prestaciones ?? new()).Select(p => new PrestacionOdontologia
             {
                 TipoPrestacionId = p.TipoPrestacionId,
                 Cantidad = p.Cantidad
@@ -302,7 +302,7 @@ public class AtencionesOdontologiaController : Controller
             atencion.SinObraSocial = true;
 
         _db.PrestacionesOdontologia.RemoveRange(atencion.Prestaciones);
-        atencion.Prestaciones = vm.Prestaciones.Select(p => new PrestacionOdontologia
+        atencion.Prestaciones = (vm.Prestaciones ?? new()).Select(p => new PrestacionOdontologia
         {
             TipoPrestacionId = p.TipoPrestacionId,
             Cantidad = p.Cantidad
