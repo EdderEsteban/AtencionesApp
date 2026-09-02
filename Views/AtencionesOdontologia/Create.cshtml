@@ -99,10 +99,10 @@
                     <div class="col-12" id="osInlineContainer"
                          style="display: @(!Model.SinObraSocial && !Model.PacienteTieneObraSocial ? "block" : "none")">
                         <label class="form-label-small">OBRA SOCIAL DEL PACIENTE</label>
-                        <input asp-for="NuevaObraSocial" type="text" class="form-control"
-                               id="NuevaObraSocial"
-                               placeholder="Ej: DOSEP, PAMI, OSDE..."
-                               maxlength="100" />
+                        <select asp-for="NuevaObraSocialId" class="form-control"
+                                asp-items="@(new SelectList(ViewBag.ObrasSociales, "Id", "Nombre"))">
+                            <option value="">— Seleccionar obra social —</option>
+                        </select>
                         <span class="form-text">Se guardará en el registro del paciente</span>
                     </div>
                     <div class="col-12">

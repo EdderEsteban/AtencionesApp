@@ -91,6 +91,10 @@ using AtencionesApp.Models.Data;
           ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
               .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
               .ToListAsync();
+          ViewBag.ObrasSociales = await _db.ObrasSociales
+              .Where(o => !o.IsDeleted)
+              .OrderBy(o => o.Nombre)
+              .ToListAsync();
           ViewBag.PacienteSubtitulo = $"{paciente.Apellido}, {paciente.Nombre} · DNI {paciente.DNI}";
           return View(vm);
       }
@@ -107,6 +111,10 @@ using AtencionesApp.Models.Data;
           {
               ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
                   .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
+                  .ToListAsync();
+              ViewBag.ObrasSociales = await _db.ObrasSociales
+                  .Where(o => !o.IsDeleted)
+                  .OrderBy(o => o.Nombre)
                   .ToListAsync();
               return View(vm);
           }
@@ -140,7 +148,9 @@ using AtencionesApp.Models.Data;
               }).ToList()
           };
 
-          if (!vm.SinObraSocial && paciente!.ObraSocialId == null)
+          if (!vm.SinObraSocial && vm.NuevaObraSocialId != null)
+              paciente!.ObraSocialId = vm.NuevaObraSocialId;
+          else if (!vm.SinObraSocial && paciente!.ObraSocialId == null)
               atencion.SinObraSocial = true;
 
           _db.AtencionesEnfermeria.Add(atencion);
@@ -197,6 +207,10 @@ using AtencionesApp.Models.Data;
           ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
               .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
               .ToListAsync();
+          ViewBag.ObrasSociales = await _db.ObrasSociales
+              .Where(o => !o.IsDeleted)
+              .OrderBy(o => o.Nombre)
+              .ToListAsync();
           return View(vm);
       }
 
@@ -212,6 +226,10 @@ using AtencionesApp.Models.Data;
           {
               ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
                   .OrderBy(t => t.Grupo).ThenBy(t => t.NombrePrestacion)
+                  .ToListAsync();
+              ViewBag.ObrasSociales = await _db.ObrasSociales
+                  .Where(o => !o.IsDeleted)
+                  .OrderBy(o => o.Nombre)
                   .ToListAsync();
               return View(vm);
           }
@@ -240,7 +258,9 @@ using AtencionesApp.Models.Data;
           atencion.SinObraSocial = vm.SinObraSocial;
           atencion.Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim();
 
-          if (!vm.SinObraSocial && paciente?.ObraSocialId == null)
+          if (!vm.SinObraSocial && vm.NuevaObraSocialId != null)
+              paciente!.ObraSocialId = vm.NuevaObraSocialId;
+          else if (!vm.SinObraSocial && paciente?.ObraSocialId == null)
               atencion.SinObraSocial = true;
 
           _db.PrestacionesEnfermeria.RemoveRange(atencion.Prestaciones);

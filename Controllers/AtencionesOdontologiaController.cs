@@ -158,7 +158,9 @@ public class AtencionesOdontologiaController : Controller
             }).ToList()
         };
 
-        if (!vm.SinObraSocial && paciente!.ObraSocialId == null)
+        if (!vm.SinObraSocial && vm.NuevaObraSocialId != null)
+            paciente!.ObraSocialId = vm.NuevaObraSocialId;
+        else if (!vm.SinObraSocial && paciente!.ObraSocialId == null)
             atencion.SinObraSocial = true;
 
         // Odontograma (solo estados distintos de "Sano") → estados crudos
@@ -296,7 +298,9 @@ public class AtencionesOdontologiaController : Controller
         atencion.SinObraSocial = vm.SinObraSocial;
         atencion.Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim();
 
-        if (!vm.SinObraSocial && paciente?.ObraSocialId == null)
+        if (!vm.SinObraSocial && vm.NuevaObraSocialId != null)
+            paciente!.ObraSocialId = vm.NuevaObraSocialId;
+        else if (!vm.SinObraSocial && paciente?.ObraSocialId == null)
             atencion.SinObraSocial = true;
 
         _db.PrestacionesOdontologia.RemoveRange(atencion.Prestaciones);
@@ -380,6 +384,10 @@ public class AtencionesOdontologiaController : Controller
         ViewBag.Diagnosticos = await _db.Diagnosticos
             .OrderBy(d => d.Codigo)
             .ToListAsync();
+        ViewBag.ObrasSociales = await _db.ObrasSociales
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Nombre)
+            .ToListAsync();
         if (paciente != null)
             ViewBag.PacienteSubtitulo = $"{paciente.Apellido}, {paciente.Nombre} · DNI {paciente.DNI}";
     }
@@ -391,6 +399,10 @@ public class AtencionesOdontologiaController : Controller
             .ToListAsync();
         ViewBag.Diagnosticos = await _db.Diagnosticos
             .OrderBy(d => d.Codigo)
+            .ToListAsync();
+        ViewBag.ObrasSociales = await _db.ObrasSociales
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Nombre)
             .ToListAsync();
     }
 }

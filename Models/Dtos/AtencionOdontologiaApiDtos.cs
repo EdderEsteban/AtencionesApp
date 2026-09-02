@@ -15,7 +15,7 @@ public class CrearAtencionOdontologiaRequest
     public int DiagnosticoId { get; set; }
     public bool Embarazada { get; set; }
     public bool SinObraSocial { get; set; }
-    public string? NuevaObraSocial { get; set; }
+    public int? NuevaObraSocialId { get; set; }
     public string? Observaciones { get; set; } 
     public List<PrestacionInputDto> Prestaciones { get; set; } = new();
     public List<OdontogramaEstadoInput> Odontograma { get; set; } = new();

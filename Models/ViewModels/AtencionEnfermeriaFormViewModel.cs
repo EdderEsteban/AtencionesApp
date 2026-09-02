@@ -24,7 +24,7 @@ public class AtencionEnfermeriaFormViewModel
     public bool PacienteTieneObraSocial { get; set; }
     public string? PacienteObraSocial { get; set; }
     public string? Observaciones { get; set; }
-    public string? NuevaObraSocial { get; set; }
+    public int? NuevaObraSocialId { get; set; }
 
     public int Edad { get; set; }
 

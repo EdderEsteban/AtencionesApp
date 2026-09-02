@@ -66,7 +66,9 @@ req.Observaciones.Trim(),
             }).ToList()
         };
 
-        if (!req.SinObraSocial && paciente.ObraSocialId == null)
+        if (!req.SinObraSocial && req.NuevaObraSocialId != null)
+            paciente.ObraSocialId = req.NuevaObraSocialId;
+        else if (!req.SinObraSocial && paciente.ObraSocialId == null)
             atencion.SinObraSocial = true;
 
         _context.AtencionesEnfermeria.Add(atencion);

@@ -12,7 +12,7 @@ public class CrearAtencionEnfermeriaRequest
     public int TipoAtencion { get; set; } // 1 Ambulatorio, 2 Internado
     public bool Embarazada { get; set; }
     public bool SinObraSocial { get; set; }
-    public string? NuevaObraSocial { get; set; }
+    public int? NuevaObraSocialId { get; set; }
     public string? Observaciones { get; set; }
     public List<PrestacionInputDto> Prestaciones { get; set; } = new();
 }
