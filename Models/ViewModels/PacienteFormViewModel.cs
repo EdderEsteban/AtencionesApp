@@ -31,6 +31,5 @@
       [StringLength(50)]
       public string? Telefono { get; set; }
 
-      [StringLength(100)]
-      public string? ObraSocial { get; set; }
+      public int? ObraSocialId { get; set; }
   }

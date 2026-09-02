@@ -23,7 +23,7 @@ public class PacientesController : Controller
     {
         ViewBag.Busqueda = q;
 
-        var query = _context.Pacientes.AsQueryable();
+        var query = _context.Pacientes.Include(p => p.ObraSocial).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -102,7 +102,7 @@ public class PacientesController : Controller
             Sexo = vm.Sexo,
             Domicilio = vm.Domicilio?.Trim(),
             Telefono = vm.Telefono?.Trim(),
-            ObraSocial = vm.ObraSocial?.Trim()
+            ObraSocialId = vm.ObraSocialId
         };
 
         _context.Pacientes.Add(paciente);
@@ -130,7 +130,7 @@ public class PacientesController : Controller
             Sexo = paciente.Sexo,
             Domicilio = paciente.Domicilio,
             Telefono = paciente.Telefono,
-            ObraSocial = paciente.ObraSocial
+            ObraSocialId = paciente.ObraSocialId
         };
 
         return View(vm);
@@ -164,7 +164,7 @@ public class PacientesController : Controller
         paciente.Sexo = vm.Sexo;
         paciente.Domicilio = vm.Domicilio?.Trim();
         paciente.Telefono = vm.Telefono?.Trim();
-        paciente.ObraSocial = vm.ObraSocial?.Trim();
+        paciente.ObraSocialId = vm.ObraSocialId;
 
         await _context.SaveChangesAsync();
 
@@ -176,6 +176,7 @@ public class PacientesController : Controller
     public async Task<IActionResult> Details(int id)
     {
         var paciente = await _context.Pacientes
+            .Include(p => p.ObraSocial)
             .Include(p => p.AtencionesEnfermeria)
                 .ThenInclude(a => a.Prestaciones)
                     .ThenInclude(pr => pr.TipoPrestacion)

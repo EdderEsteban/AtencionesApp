@@ -10,7 +10,8 @@ namespace AtencionesApp.Models.Entities;
       public string Sexo { get; set; } = string.Empty;
       public string? Domicilio { get; set; }
       public string? Telefono { get; set; }
-      public string? ObraSocial { get; set; }
+      public int? ObraSocialId { get; set; }
+      public ObraSocial? ObraSocial { get; set; }
       public bool IsDeleted { get; set; }
 
       public ICollection<AtencionEnfermeria> AtencionesEnfermeria { get; set; } = new

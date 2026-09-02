@@ -21,6 +21,7 @@ public class PacientesApiController : ApiControllerBase
 
         q = q.Trim();
         var pacientes = await _context.Pacientes
+            .Include(p => p.ObraSocial)
             .Where(p => p.DNI.Contains(q) || p.Apellido.Contains(q) || p.Nombre.Contains(q))
             .OrderBy(p => p.Apellido).ThenBy(p => p.Nombre)
             .Take(50)
@@ -35,7 +36,8 @@ public class PacientesApiController : ApiControllerBase
             DNI = p.DNI,
             Edad = CalcularEdad(p.FechaNacimiento, hoy),
             Sexo = p.Sexo,
-            ObraSocial = p.ObraSocial,
+            ObraSocialId = p.ObraSocialId,
+            ObraSocial = p.ObraSocial != null ? p.ObraSocial.Nombre : null,
             Telefono = p.Telefono
         }).ToList();
 
@@ -65,7 +67,7 @@ public class PacientesApiController : ApiControllerBase
             Sexo = req.Sexo,
             Domicilio = string.IsNullOrWhiteSpace(req.Domicilio) ? null : req.Domicilio.Trim(),
             Telefono = string.IsNullOrWhiteSpace(req.Telefono) ? null : req.Telefono.Trim(),
-            ObraSocial = string.IsNullOrWhiteSpace(req.ObraSocial) ? null : req.ObraSocial.Trim()
+            ObraSocialId = req.ObraSocialId
         };
 
         _context.Pacientes.Add(paciente);
@@ -79,6 +81,7 @@ public class PacientesApiController : ApiControllerBase
     public async Task<IActionResult> Ficha(int id)
     {
         var p = await _context.Pacientes
+            .Include(x => x.ObraSocial)
             .Include(x => x.AtencionesEnfermeria).ThenInclude(a => a.Prestaciones).ThenInclude(pr => pr.TipoPrestacion)
             .Include(x => x.AtencionesOdontologia).ThenInclude(a => a.Prestaciones).ThenInclude(pr => pr.TipoPrestacion)
             .Include(x => x.AtencionesOdontologia).ThenInclude(a => a.Diagnostico)
@@ -122,7 +125,8 @@ public class PacientesApiController : ApiControllerBase
             Sexo = p.Sexo,
             Domicilio = p.Domicilio,
             Telefono = p.Telefono,
-            ObraSocial = p.ObraSocial,
+            ObraSocialId = p.ObraSocialId,
+            ObraSocial = p.ObraSocial != null ? p.ObraSocial.Nombre : null,
             Atenciones = timeline
                 .OrderByDescending(t => t.Fecha).ThenByDescending(t => t.Id).ToList()
         };

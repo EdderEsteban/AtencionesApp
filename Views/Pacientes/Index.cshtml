@@ -82,7 +82,7 @@ else
                                 <span class="badge-sexo badge-sexo-n">—</span>
                             }
                         </td>
-                        <td>@(p.ObraSocial ?? "—")</td>
+                        <td>@(p.ObraSocial?.Nombre ?? "—")</td>
                         <td class="td-fecha-ult">
                             @(ultFecha.HasValue ? ultFecha.Value.ToString("dd/MM/yyyy") : "—")
                         </td>

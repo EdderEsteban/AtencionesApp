@@ -8,6 +8,7 @@ public class PacienteListItemDto
     public string DNI { get; set; } = "";
     public int Edad { get; set; }
     public string Sexo { get; set; } = "";
+    public int? ObraSocialId { get; set; }
     public string? ObraSocial { get; set; }
     public string? Telefono { get; set; }
 }
@@ -23,6 +24,7 @@ public class PacienteDetalleDto
     public string Sexo { get; set; } = "";
     public string? Domicilio { get; set; }
     public string? Telefono { get; set; }
+    public int? ObraSocialId { get; set; }
     public string? ObraSocial { get; set; }
     public List<AtencionTimelineDto> Atenciones { get; set; } = new();
 }
@@ -47,5 +49,5 @@ public class CrearPacienteRequest
     public string Sexo { get; set; } = "";
     public string? Domicilio { get; set; }
     public string? Telefono { get; set; }
-    public string? ObraSocial { get; set; }
+    public int? ObraSocialId { get; set; }
 }

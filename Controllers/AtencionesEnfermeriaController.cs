@@ -71,7 +71,9 @@ using AtencionesApp.Models.Data;
           if (!pacienteId.HasValue)
               return RedirectToAction("Index", "Pacientes");
 
-          var paciente = await _db.Pacientes.FindAsync(pacienteId.Value);
+          var paciente = await _db.Pacientes
+              .Include(p => p.ObraSocial)
+              .FirstOrDefaultAsync(p => p.Id == pacienteId.Value);
           if (paciente == null) return NotFound();
 
           var vm = new AtencionEnfermeriaFormViewModel
@@ -81,9 +83,9 @@ using AtencionesApp.Models.Data;
               PacienteNombre = $"{paciente.Apellido}, {paciente.Nombre}",
               PacienteFechaNacimiento = paciente.FechaNacimiento.ToString("yyyy-MM-dd"),
               PacienteSexo = paciente.Sexo,
-              PacienteTieneObraSocial = !string.IsNullOrEmpty(paciente.ObraSocial),
-              PacienteObraSocial = paciente.ObraSocial,
-              SinObraSocial = string.IsNullOrEmpty(paciente.ObraSocial)
+              PacienteTieneObraSocial = paciente.ObraSocialId != null,
+              PacienteObraSocial = paciente.ObraSocial?.Nombre,
+              SinObraSocial = paciente.ObraSocialId == null
           };
 
           ViewBag.Tipos = await _db.TiposPrestacionEnfermeria
@@ -138,9 +140,7 @@ using AtencionesApp.Models.Data;
               }).ToList()
           };
 
-          if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
-              paciente!.ObraSocial = vm.NuevaObraSocial.Trim();
-          else if (!vm.SinObraSocial && string.IsNullOrEmpty(paciente!.ObraSocial))
+          if (!vm.SinObraSocial && paciente!.ObraSocialId == null)
               atencion.SinObraSocial = true;
 
           _db.AtencionesEnfermeria.Add(atencion);
@@ -156,7 +156,7 @@ using AtencionesApp.Models.Data;
       {
           var atencion = await _db.AtencionesEnfermeria
               .Include(a => a.Prestaciones)
-              .Include(a => a.Paciente)
+              .Include(a => a.Paciente).ThenInclude(p => p.ObraSocial)
               .FirstOrDefaultAsync(a => a.Id == id);
 
           if (atencion == null) return NotFound();
@@ -183,8 +183,8 @@ using AtencionesApp.Models.Data;
               SinObraSocial = atencion.SinObraSocial,
               Observaciones = atencion.Observaciones,
               PacienteSexo = atencion.Paciente.Sexo,
-              PacienteTieneObraSocial = !string.IsNullOrEmpty(atencion.Paciente.ObraSocial),
-              PacienteObraSocial = atencion.Paciente.ObraSocial,
+              PacienteTieneObraSocial = atencion.Paciente.ObraSocialId != null,
+              PacienteObraSocial = atencion.Paciente.ObraSocial?.Nombre,
               Edad = atencion.Edad,
               PacienteFechaNacimiento = atencion.Paciente.FechaNacimiento.ToString("yyyy-MM-dd"),
               Prestaciones = atencion.Prestaciones.Select(p => new PrestacionSeleccionadaVM
@@ -240,9 +240,7 @@ using AtencionesApp.Models.Data;
           atencion.SinObraSocial = vm.SinObraSocial;
           atencion.Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim();
 
-          if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
-              paciente!.ObraSocial = vm.NuevaObraSocial.Trim();
-          else if (!vm.SinObraSocial && string.IsNullOrEmpty(paciente?.ObraSocial))
+          if (!vm.SinObraSocial && paciente?.ObraSocialId == null)
               atencion.SinObraSocial = true;
 
           _db.PrestacionesEnfermeria.RemoveRange(atencion.Prestaciones);
@@ -261,7 +259,7 @@ using AtencionesApp.Models.Data;
       public async Task<IActionResult> Details(int id)
       {
           var atencion = await _db.AtencionesEnfermeria
-              .Include(a => a.Paciente)
+              .Include(a => a.Paciente).ThenInclude(p => p.ObraSocial)
               .Include(a => a.Usuario)
               .Include(a => a.Prestaciones).ThenInclude(p => p.TipoPrestacion)
               .FirstOrDefaultAsync(a => a.Id == id);

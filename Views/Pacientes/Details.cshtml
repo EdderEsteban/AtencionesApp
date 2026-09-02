@@ -45,9 +45,9 @@
                 DNI: <strong>@Model.DNI</strong>
                 &nbsp;·&nbsp; Nac: <strong>@Model.FechaNacimiento.ToString("dd/MM/yyyy")</strong> (@edadActual años)
                 &nbsp;·&nbsp; Sexo: <strong>@(Model.Sexo == "M" ? "Masculino" : Model.Sexo == "F" ? "Femenino" : "No especificado")</strong>
-                @if (!string.IsNullOrEmpty(Model.ObraSocial))
+                @if (!string.IsNullOrEmpty(Model.ObraSocial?.Nombre))
                 {
-                    <span>&nbsp;·&nbsp; OS: <strong>@Model.ObraSocial</strong></span>
+                    <span>&nbsp;·&nbsp; OS: <strong>@Model.ObraSocial?.Nombre</strong></span>
                 }
                 @if (!string.IsNullOrEmpty(Model.Telefono))
                 {

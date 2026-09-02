@@ -73,7 +73,9 @@ public class AtencionesOdontologiaController : Controller
         if (!pacienteId.HasValue)
             return RedirectToAction("Index", "Pacientes");
 
-        var paciente = await _db.Pacientes.FindAsync(pacienteId.Value);
+        var paciente = await _db.Pacientes
+            .Include(p => p.ObraSocial)
+            .FirstOrDefaultAsync(p => p.Id == pacienteId.Value);
         if (paciente == null) return NotFound();
 
         var vm = new AtencionOdontologiaFormViewModel
@@ -83,9 +85,9 @@ public class AtencionesOdontologiaController : Controller
             PacienteNombre = $"{paciente.Apellido}, {paciente.Nombre}",
             PacienteFechaNacimiento = paciente.FechaNacimiento.ToString("yyyy-MM-dd"),
             PacienteSexo = paciente.Sexo,
-            PacienteTieneObraSocial = !string.IsNullOrEmpty(paciente.ObraSocial),
-            PacienteObraSocial = paciente.ObraSocial,
-            SinObraSocial = string.IsNullOrEmpty(paciente.ObraSocial)
+            PacienteTieneObraSocial = paciente.ObraSocialId != null,
+            PacienteObraSocial = paciente.ObraSocial?.Nombre,
+            SinObraSocial = paciente.ObraSocialId == null
         };
 
         // Auto-cargar estados del último odontograma del paciente
@@ -156,9 +158,7 @@ public class AtencionesOdontologiaController : Controller
             }).ToList()
         };
 
-        if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
-            paciente!.ObraSocial = vm.NuevaObraSocial.Trim();
-        else if (!vm.SinObraSocial && string.IsNullOrEmpty(paciente!.ObraSocial))
+        if (!vm.SinObraSocial && paciente!.ObraSocialId == null)
             atencion.SinObraSocial = true;
 
         // Odontograma (solo estados distintos de "Sano") → estados crudos
@@ -193,7 +193,7 @@ public class AtencionesOdontologiaController : Controller
     {
         var atencion = await _db.AtencionesOdontologia
             .Include(a => a.Prestaciones)
-            .Include(a => a.Paciente)
+            .Include(a => a.Paciente).ThenInclude(p => p.ObraSocial)
             .Include(a => a.ValoracionDental)
             .Include(a => a.OdontogramaEstados)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -219,8 +219,8 @@ public class AtencionesOdontologiaController : Controller
             PacienteNombre = $"{atencion.Paciente.Apellido}, {atencion.Paciente.Nombre}",
             PacienteFechaNacimiento = atencion.Paciente.FechaNacimiento.ToString("yyyy-MM-dd"),
             PacienteSexo = atencion.Paciente.Sexo,
-            PacienteTieneObraSocial = !string.IsNullOrEmpty(atencion.Paciente.ObraSocial),
-            PacienteObraSocial = atencion.Paciente.ObraSocial,
+            PacienteTieneObraSocial = atencion.Paciente.ObraSocialId != null,
+            PacienteObraSocial = atencion.Paciente.ObraSocial?.Nombre,
             TipoConsulta = atencion.TipoConsulta,
             TipoTurno = atencion.TipoTurno,
             DiagnosticoId = atencion.DiagnosticoId,
@@ -296,9 +296,7 @@ public class AtencionesOdontologiaController : Controller
         atencion.SinObraSocial = vm.SinObraSocial;
         atencion.Observaciones = string.IsNullOrWhiteSpace(vm.Observaciones) ? null : vm.Observaciones.Trim();
 
-        if (!vm.SinObraSocial && !string.IsNullOrWhiteSpace(vm.NuevaObraSocial))
-            paciente!.ObraSocial = vm.NuevaObraSocial.Trim();
-        else if (!vm.SinObraSocial && string.IsNullOrEmpty(paciente?.ObraSocial))
+        if (!vm.SinObraSocial && paciente?.ObraSocialId == null)
             atencion.SinObraSocial = true;
 
         _db.PrestacionesOdontologia.RemoveRange(atencion.Prestaciones);
@@ -349,7 +347,7 @@ public class AtencionesOdontologiaController : Controller
     public async Task<IActionResult> Details(int id)
     {
         var atencion = await _db.AtencionesOdontologia
-            .Include(a => a.Paciente)
+            .Include(a => a.Paciente).ThenInclude(p => p.ObraSocial)
             .Include(a => a.Usuario)
             .Include(a => a.Diagnostico)
             .Include(a => a.Prestaciones).ThenInclude(p => p.TipoPrestacion)

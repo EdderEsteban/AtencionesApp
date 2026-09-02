@@ -89,9 +89,7 @@ public class AtencionesOdontologiaApiController : ApiControllerBase
             OdontogramaEstados = estados
         };
 
-        if (!req.SinObraSocial && !string.IsNullOrWhiteSpace(req.NuevaObraSocial))
-            paciente.ObraSocial = req.NuevaObraSocial.Trim();
-        else if (!req.SinObraSocial && string.IsNullOrEmpty(paciente.ObraSocial))
+        if (!req.SinObraSocial && paciente.ObraSocialId == null)
             atencion.SinObraSocial = true;
 
         _context.AtencionesOdontologia.Add(atencion);

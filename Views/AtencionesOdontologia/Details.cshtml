@@ -68,7 +68,7 @@
             </div>
             <div class="dato-row">
                 <span class="dato-label">Obra social</span>
-                <span class="dato-valor">@(Model.SinObraSocial ? "No" : (Model.Paciente.ObraSocial ?? "Sí"))</span>
+                <span class="dato-valor">@(Model.SinObraSocial ? "No" : (Model.Paciente.ObraSocial?.Nombre ?? "Sí"))</span>
             </div>
             <div class="dato-row">
                 <span class="dato-label">Registrado por</span>
