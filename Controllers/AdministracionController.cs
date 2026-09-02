@@ -314,4 +314,80 @@ public class AdministracionController : Controller
         TempData["Exito"] = "Prestación eliminada";
         return RedirectToAction(nameof(PrestacionesOdontologia));
     }
+
+    // ─── OBRAS SOCIALES ─────────────────────────────────────────────────────────
+
+    public async Task<IActionResult> ObrasSociales()
+    {
+        var obras = await _db.ObrasSociales
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Nombre)
+            .ToListAsync();
+        return View(obras);
+    }
+
+    public IActionResult CrearObraSocial()
+    {
+        return View(new ObraSocialFormViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CrearObraSocial(ObraSocialFormViewModel vm)
+    {
+        if (!ModelState.IsValid) return View(vm);
+
+        var nombre = vm.Nombre.Trim();
+        if (await _db.ObrasSociales.AnyAsync(o => o.Nombre == nombre))
+        {
+            ModelState.AddModelError(nameof(vm.Nombre), "Ya existe una obra social con ese nombre");
+            return View(vm);
+        }
+
+        _db.ObrasSociales.Add(new ObraSocial { Nombre = nombre });
+        await _db.SaveChangesAsync();
+        TempData["Exito"] = "Obra social creada correctamente";
+        return RedirectToAction(nameof(ObrasSociales));
+    }
+
+    public async Task<IActionResult> EditarObraSocial(int id)
+    {
+        var o = await _db.ObrasSociales.FindAsync(id);
+        if (o == null) return NotFound();
+        return View(new ObraSocialFormViewModel { Id = o.Id, Nombre = o.Nombre });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditarObraSocial(int id, ObraSocialFormViewModel vm)
+    {
+        if (!ModelState.IsValid) return View(vm);
+
+        var o = await _db.ObrasSociales.FindAsync(id);
+        if (o == null) return NotFound();
+
+        var nombre = vm.Nombre.Trim();
+        if (await _db.ObrasSociales.AnyAsync(x => x.Nombre == nombre && x.Id != id))
+        {
+            ModelState.AddModelError(nameof(vm.Nombre), "Ya existe otra obra social con ese nombre");
+            return View(vm);
+        }
+
+        o.Nombre = nombre;
+        await _db.SaveChangesAsync();
+        TempData["Exito"] = "Obra social actualizada";
+        return RedirectToAction(nameof(ObrasSociales));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EliminarObraSocial(int id)
+    {
+        var o = await _db.ObrasSociales.FindAsync(id);
+        if (o == null) return NotFound();
+        o.IsDeleted = true;
+        await _db.SaveChangesAsync();
+        TempData["Exito"] = "Obra social eliminada";
+        return RedirectToAction(nameof(ObrasSociales));
+    }
 }
