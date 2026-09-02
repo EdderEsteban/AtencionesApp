@@ -58,6 +58,20 @@ public class PacientesApiController : ApiControllerBase
         if (dniExiste)
             return BadRequest(new { error = "Ya existe un paciente con ese DNI." });
 
+        var obraSocialId = req.ObraSocialId;
+        if (obraSocialId == null && !string.IsNullOrWhiteSpace(req.ObraSocial))
+        {
+            obraSocialId = await ResolverObraSocialPorNombre(_context, req.ObraSocial);
+            if (obraSocialId == null)
+                return BadRequest(new { error = $"La obra social '{req.ObraSocial.Trim()}' no figura en el padrón. Actualizá la aplicación para seleccionarla de la lista." });
+        }
+
+        if (obraSocialId != null &&
+            !await _context.ObrasSociales.AnyAsync(o => o.Id == obraSocialId && !o.IsDeleted))
+        {
+            return BadRequest(new { error = "La obra social indicada no existe o fue dada de baja." });
+        }
+
         var paciente = new Paciente
         {
             DNI = req.DNI.Trim(),
@@ -67,7 +81,7 @@ public class PacientesApiController : ApiControllerBase
             Sexo = req.Sexo,
             Domicilio = string.IsNullOrWhiteSpace(req.Domicilio) ? null : req.Domicilio.Trim(),
             Telefono = string.IsNullOrWhiteSpace(req.Telefono) ? null : req.Telefono.Trim(),
-            ObraSocialId = req.ObraSocialId
+            ObraSocialId = obraSocialId
         };
 
         _context.Pacientes.Add(paciente);

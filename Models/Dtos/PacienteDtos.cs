@@ -50,4 +50,8 @@ public class CrearPacienteRequest
     public string? Domicilio { get; set; }
     public string? Telefono { get; set; }
     public int? ObraSocialId { get; set; }
+
+    // Compatibilidad con la app móvil anterior, que enviaba el nombre en texto.
+    // Se resuelve contra el padrón; si no se puede resolver, la petición se rechaza.
+    public string? ObraSocial { get; set; }
 }

@@ -78,7 +78,7 @@
                     <div class="col-12" id="osInlineContainer"
                          style="display: @(!Model.SinObraSocial && !Model.PacienteTieneObraSocial ? "block" : "none")">
                         <label class="form-label-small">OBRA SOCIAL DEL PACIENTE</label>
-                        <select asp-for="NuevaObraSocialId" class="form-control"
+                        <select asp-for="NuevaObraSocialId" class="form-select"
                                 asp-items="@(new SelectList(ViewBag.ObrasSociales, "Id", "Nombre"))">
                             <option value="">— Seleccionar obra social —</option>
                         </select>

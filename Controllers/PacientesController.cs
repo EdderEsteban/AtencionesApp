@@ -130,8 +130,11 @@ public class PacientesController : Controller
         if (paciente == null)
             return NotFound();
 
+        // Se incluye la obra social actual del paciente aunque esté dada de baja,
+        // para que una edición ajena a la obra social no se la borre.
+        var obraSocialActual = paciente.ObraSocialId;
         ViewBag.ObrasSociales = await _context.ObrasSociales
-            .Where(o => !o.IsDeleted)
+            .Where(o => !o.IsDeleted || o.Id == obraSocialActual)
             .OrderBy(o => o.Nombre)
             .ToListAsync();
 
@@ -157,8 +160,11 @@ public class PacientesController : Controller
     [Authorize(Roles = "Administrador,Enfermero,Odontólogo")]
     public async Task<IActionResult> Edit(int id, PacienteFormViewModel vm)
     {
+        // Igual que en el GET: la obra social elegida sigue en la lista aunque
+        // esté dada de baja, para no perderla al volver por un error de validación.
+        var obraSocialActual = vm.ObraSocialId;
         ViewBag.ObrasSociales = await _context.ObrasSociales
-            .Where(o => !o.IsDeleted)
+            .Where(o => !o.IsDeleted || o.Id == obraSocialActual)
             .OrderBy(o => o.Nombre)
             .ToListAsync();
 

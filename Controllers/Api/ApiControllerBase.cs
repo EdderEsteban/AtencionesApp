@@ -1,6 +1,8 @@
  using System.Security.Claims;
+  using AtencionesApp.Models.Data;
   using Microsoft.AspNetCore.Authorization;
   using Microsoft.AspNetCore.Mvc;
+  using Microsoft.EntityFrameworkCore;
 
   namespace AtencionesApp.Controllers.Api;
 
@@ -30,5 +32,31 @@
           if (InstitucionId == null)
               return Conflict(new { error = "Seleccioná una institución antes de continuar." });
           return null;
+      }
+
+      // Resuelve el nombre de una obra social contra el padrón, para las versiones
+      // de la app móvil que todavía envían texto en lugar del identificador.
+      // Devuelve null si no hay ninguna coincidencia.
+      protected static async Task<int?> ResolverObraSocialPorNombre(
+          AppDbContext db, string? nombre)
+      {
+          if (string.IsNullOrWhiteSpace(nombre)) return null;
+          var buscado = nombre.Trim();
+
+          // Coincidencia por nombre completo. La collation de la columna es
+          // case-insensitive, así que la comparación no distingue mayúsculas.
+          var porNombre = await db.ObrasSociales
+              .Where(o => !o.IsDeleted && o.Nombre == buscado)
+              .Select(o => (int?)o.Id)
+              .FirstOrDefaultAsync();
+          if (porNombre != null) return porNombre;
+
+          // Coincidencia por sigla: la app suele mandar "PAMI" y el padrón lo tiene
+          // como "(PAMI) INSTITUTO NACIONAL DE...".
+          var conParentesis = "(" + buscado + ")";
+          return await db.ObrasSociales
+              .Where(o => !o.IsDeleted && o.Nombre.StartsWith(conParentesis))
+              .Select(o => (int?)o.Id)
+              .FirstOrDefaultAsync();
       }
   }

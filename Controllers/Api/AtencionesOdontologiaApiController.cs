@@ -53,6 +53,26 @@ public class AtencionesOdontologiaApiController : ApiControllerBase
         if (!await _context.Diagnosticos.AnyAsync(d => d.Id == req.DiagnosticoId))
             return BadRequest(new { error = "Diagnóstico no válido." });
 
+        // Solo corresponde resolver o validar la obra social cuando el profesional
+        // no marcó "sin obra social": si la marcó, no registró ninguna, así que no
+        // hay nada que preservar ni motivo para rechazar la atención.
+        var nuevaObraSocialId = req.NuevaObraSocialId;
+        if (!req.SinObraSocial)
+        {
+            if (nuevaObraSocialId == null && !string.IsNullOrWhiteSpace(req.NuevaObraSocial))
+            {
+                nuevaObraSocialId = await ResolverObraSocialPorNombre(_context, req.NuevaObraSocial);
+                if (nuevaObraSocialId == null)
+                    return BadRequest(new { error = $"La obra social '{req.NuevaObraSocial.Trim()}' no figura en el padrón. Actualizá la aplicación para seleccionarla de la lista." });
+            }
+
+            if (nuevaObraSocialId != null &&
+                !await _context.ObrasSociales.AnyAsync(o => o.Id == nuevaObraSocialId && !o.IsDeleted))
+            {
+                return BadRequest(new { error = "La obra social indicada no existe o fue dada de baja." });
+            }
+        }
+
         var ahora = DateTime.Now;
         var edad = ahora.Year - paciente.FechaNacimiento.Year;
         if (paciente.FechaNacimiento.DayOfYear > ahora.DayOfYear) edad--;
@@ -89,8 +109,8 @@ public class AtencionesOdontologiaApiController : ApiControllerBase
             OdontogramaEstados = estados
         };
 
-        if (!req.SinObraSocial && req.NuevaObraSocialId != null)
-            paciente.ObraSocialId = req.NuevaObraSocialId;
+        if (!req.SinObraSocial && nuevaObraSocialId != null)
+            paciente.ObraSocialId = nuevaObraSocialId;
         else if (!req.SinObraSocial && paciente.ObraSocialId == null)
             atencion.SinObraSocial = true;
 

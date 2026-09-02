@@ -1,5 +1,4 @@
 using AtencionesApp.Models.Entities;
-  using Microsoft.AspNetCore.Identity;
   using Microsoft.EntityFrameworkCore;
   using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +8,6 @@ using AtencionesApp.Models.Entities;
   {
       public void Configure(EntityTypeBuilder<Usuario> builder)
       {
-          var hasher = new PasswordHasher<Usuario>();
           var admin = new Usuario
           {
               Id = 1,
@@ -20,7 +18,13 @@ using AtencionesApp.Models.Entities;
               RolId = 1,
               IsDeleted = false
           };
-          admin.PasswordHash = hasher.HashPassword(admin, "Admin123!");
+          // El hash se fija como literal a propósito. PasswordHasher usa un salt
+          // aleatorio, así que calcularlo acá devolvía un valor distinto en cada
+          // construcción del modelo y Entity Framework lo tomaba como dato sembrado
+          // modificado: cada migración emitía un UpdateData que le restauraba la
+          // contraseña al administrador. Corresponde a la contraseña inicial, que
+          // debe cambiarse desde la aplicación en el primer uso.
+          admin.PasswordHash = "AQAAAAIAAYagAAAAEIMT/6Yh19Xgm7OpMNQLydTmQw5WfKEx59Lgd2RRgg3i+ot14yAgDjpyD2gib/gkRA==";
 
           builder.HasData(admin);
       }

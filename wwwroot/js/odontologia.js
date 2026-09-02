@@ -130,7 +130,7 @@ document.getElementById('formAtencion')?.addEventListener('submit', e => {
 // === OBRA SOCIAL INLINE ===
 const sinOsCheck = document.getElementById('SinObraSocial');
 const osContainer = document.getElementById('osInlineContainer');
-const osInput = document.getElementById('NuevaObraSocial');
+const osInput = document.getElementById('NuevaObraSocialId');
 
 sinOsCheck?.addEventListener('change', () => {
     if (!sinOsCheck.checked) {
