@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Rol> Roles { get; set; }
     public DbSet<Institucion> Instituciones { get; set; }
     public DbSet<Paciente> Pacientes { get; set; }
+    public DbSet<ObraSocial> ObrasSociales { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<Diagnostico> Diagnosticos { get; set; }
     public DbSet<TipoPrestacionEnfermeria> TiposPrestacionEnfermeria { get; set; }
