@@ -72,8 +72,13 @@ public class PacientesController : Controller
 
     // GET: /Pacientes/Create
     [Authorize(Roles = "Administrador,Enfermero,Odontólogo")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        ViewBag.ObrasSociales = await _context.ObrasSociales
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Nombre)
+            .ToListAsync();
+
         return View(new PacienteFormViewModel());
     }
 
@@ -83,6 +88,11 @@ public class PacientesController : Controller
     [Authorize(Roles = "Administrador,Enfermero,Odontólogo")]
     public async Task<IActionResult> Create(PacienteFormViewModel vm)
     {
+        ViewBag.ObrasSociales = await _context.ObrasSociales
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Nombre)
+            .ToListAsync();
+
         if (!ModelState.IsValid)
             return View(vm);
 
@@ -120,6 +130,11 @@ public class PacientesController : Controller
         if (paciente == null)
             return NotFound();
 
+        ViewBag.ObrasSociales = await _context.ObrasSociales
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Nombre)
+            .ToListAsync();
+
         var vm = new PacienteFormViewModel
         {
             Id = paciente.Id,
@@ -142,6 +157,11 @@ public class PacientesController : Controller
     [Authorize(Roles = "Administrador,Enfermero,Odontólogo")]
     public async Task<IActionResult> Edit(int id, PacienteFormViewModel vm)
     {
+        ViewBag.ObrasSociales = await _context.ObrasSociales
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Nombre)
+            .ToListAsync();
+
         if (!ModelState.IsValid)
             return View(vm);
 

@@ -78,7 +78,10 @@
 
               <div class="col-md-3">
                   <div class="form-floating">
-                      <input asp-for="ObraSocialId" class="form-control" placeholder=" " />
+                      <select asp-for="ObraSocialId" class="form-select"
+                              asp-items="@(new SelectList(ViewBag.ObrasSociales, "Id", "Nombre"))">
+                          <option value="">— Sin obra social —</option>
+                      </select>
                       <label asp-for="ObraSocialId">Obra Social (opcional)</label>
                   </div>
               </div>
