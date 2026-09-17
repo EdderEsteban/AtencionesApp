@@ -17,6 +17,11 @@ public class CrearAtencionEnfermeriaRequest
     // Compatibilidad con la app móvil anterior, que enviaba el nombre en texto.
     public string? NuevaObraSocial { get; set; }
 
+    // Fecha y hora en que la atención se cargó en el teléfono. Es la fecha
+    // clínica: la app puede sincronizar días después, sin señal en el medio.
+    // Nullable porque las versiones anteriores de la app no la envían.
+    public DateTime? FechaRegistroLocal { get; set; }
+
     public string? Observaciones { get; set; }
     public List<PrestacionInputDto> Prestaciones { get; set; } = new();
 }

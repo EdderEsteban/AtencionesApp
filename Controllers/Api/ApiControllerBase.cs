@@ -34,6 +34,27 @@
           return null;
       }
 
+      // Fecha del acto asistencial para una atención que llega de la app móvil.
+      // La app la captura en el teléfono y puede sincronizarla días después, así
+      // que la fecha clínica es la de captura y no la de llegada al servidor: la
+      // historia clínica tiene que decir cuándo se atendió al paciente, no cuándo
+      // hubo internet.
+      //
+      // Se cae a `ahora` en tres casos: si no llegó (versiones de la app
+      // anteriores a este campo), si viene del futuro —reloj del teléfono
+      // adelantado— o si es tan vieja que no puede ser real. Ante un dato dudoso
+      // conviene una fecha conservadora antes que una imposible.
+      protected static DateTime ResolverFechaAtencion(DateTime? fechaCaptura, DateTime ahora)
+      {
+          if (fechaCaptura == null) return ahora;
+
+          // Tolerancia de 5 minutos: un reloj levemente adelantado no invalida la carga.
+          if (fechaCaptura.Value > ahora.AddMinutes(5)) return ahora;
+          if (fechaCaptura.Value < ahora.AddYears(-1)) return ahora;
+
+          return fechaCaptura.Value;
+      }
+
       // Resuelve el nombre de una obra social contra el padrón, para las versiones
       // de la app móvil que todavía envían texto en lugar del identificador.
       // Devuelve null si no hay ninguna coincidencia.

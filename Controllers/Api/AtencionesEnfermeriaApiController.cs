@@ -64,12 +64,18 @@ public class AtencionesEnfermeriaApiController : ApiControllerBase
         }
 
         var ahora = DateTime.Now;
-        var edad = ahora.Year - paciente.FechaNacimiento.Year;
-        if (paciente.FechaNacimiento.DayOfYear > ahora.DayOfYear) edad--;
+
+        // La fecha clínica es la de captura en el teléfono (la app puede haber
+        // sincronizado días después); la edad se calcula a esa misma fecha, que
+        // es la que corresponde al acto asistencial.
+        var fechaAtencion = ResolverFechaAtencion(req.FechaRegistroLocal, ahora);
+        var edad = fechaAtencion.Year - paciente.FechaNacimiento.Year;
+        if (paciente.FechaNacimiento.DayOfYear > fechaAtencion.DayOfYear) edad--;
 
         var atencion = new AtencionEnfermeria
         {
-            Fecha = ahora,
+            Fecha = fechaAtencion,
+            FechaSincronizacion = ahora,
             PacienteId = req.PacienteId,
             InstitucionId = InstitucionId!.Value,   // del token
             UsuarioId = UsuarioId,                   // del token

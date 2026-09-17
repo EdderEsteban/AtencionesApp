@@ -3,7 +3,14 @@ namespace AtencionesApp.Models.Entities;
 public class AtencionOdontologia
 {
     public int Id { get; set; }
+
+    // Fecha del acto asistencial. Si la atención llegó de la app móvil es la de
+    // captura en el teléfono, que puede ser varios días anterior a esta fila.
     public DateTime Fecha { get; set; }
+
+    // Momento en que el servidor la recibió. Null en las cargadas por la web.
+    public DateTime? FechaSincronizacion { get; set; }
+
     public int Edad { get; set; }
     public int TipoConsulta { get; set; } // 1=PrimeraVez, 2=Ulterior
     public int TipoTurno { get; set; }    // 1=Ventanilla, 2=Profesional, 3=Demanda, 4=Interdisc
