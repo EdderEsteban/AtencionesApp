@@ -69,6 +69,35 @@ public class AtencionesEnfermeriaApiController : ApiControllerBase
         // sincronizado días después); la edad se calcula a esa misma fecha, que
         // es la que corresponde al acto asistencial.
         var fechaAtencion = ResolverFechaAtencion(req.FechaRegistroLocal, ahora);
+
+        // Guarda de reenvío (idempotencia).
+        //
+        // Si el servidor ya grabó esta atención pero la respuesta se perdió en el
+        // camino, el teléfono la deja PENDIENTE y la reenvía en el próximo barrido;
+        // sin esta guarda el reintento la duplicaría en la historia clínica. La
+        // clave es (paciente, profesional, institución, fecha de captura), y solo
+        // aplica si la fecha de captura se respetó tal cual: si el reloj del
+        // teléfono venía desfasado, ResolverFechaAtencion la reemplaza por la del
+        // servidor, que cambia entre reintentos y no sirve como clave.
+        //
+        // El razonamiento completo —por qué la fecha de captura alcanza como clave,
+        // por qué no se usó un UUID del cliente y por qué no hay índice único—
+        // está documentado en AtencionesOdontologiaApiController.Crear.
+        if (req.FechaRegistroLocal != null && fechaAtencion == req.FechaRegistroLocal.Value)
+        {
+            var idExistente = await _context.AtencionesEnfermeria
+                .Where(a => a.PacienteId == req.PacienteId
+                         && a.UsuarioId == UsuarioId
+                         && a.InstitucionId == InstitucionId!.Value
+                         && a.Fecha == fechaAtencion)
+                .Select(a => (int?)a.Id)
+                .FirstOrDefaultAsync();
+
+            // 200 y no 201: no se creó nada, se devuelve la que ya estaba.
+            if (idExistente != null)
+                return Ok(new { id = idExistente.Value });
+        }
+
         var edad = fechaAtencion.Year - paciente.FechaNacimiento.Year;
         if (paciente.FechaNacimiento.DayOfYear > fechaAtencion.DayOfYear) edad--;
 

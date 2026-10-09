@@ -79,6 +79,48 @@ public class AtencionesOdontologiaApiController : ApiControllerBase
         // sincronizado días después); la edad se calcula a esa misma fecha, que
         // es la que corresponde al acto asistencial.
         var fechaAtencion = ResolverFechaAtencion(req.FechaRegistroLocal, ahora);
+
+        // Guarda de reenvío (idempotencia).
+        //
+        // Si el servidor ya grabó esta atención pero la respuesta se perdió en el
+        // camino (corte de red, timeout, la app cerrada), el teléfono la deja
+        // PENDIENTE y la vuelve a enviar en el próximo barrido. Sin esta guarda el
+        // reintento crearía una segunda fila: la misma atención duplicada en la
+        // historia clínica, que es un error clínico, no cosmético.
+        //
+        // La clave es (paciente, profesional, institución, fecha de captura). No
+        // hace falta una clave generada por el cliente porque la app ya manda
+        // `fechaRegistroLocal` y en un reenvío manda exactamente la misma: el
+        // instante de captura identifica el acto asistencial. Dos atenciones
+        // distintas del mismo paciente con el mismo profesional no pueden haberse
+        // registrado en el mismo instante.
+        //
+        // Solo aplica si la fecha de captura se respetó tal cual. Si
+        // ResolverFechaAtencion la descartó (no vino, o el reloj del teléfono
+        // estaba desfasado) la fecha pasa a ser la del servidor, que cambia entre
+        // reintentos y no sirve como clave: en ese caso se sigue de largo y la
+        // atención se crea, porque es preferible un duplicado detectable a
+        // descartar una atención real por una coincidencia de otra cosa.
+        //
+        // La consulta incluye a propósito las atenciones con IsDeleted: si un
+        // administrador la dio de baja, el reintento no debe resucitarla — basta
+        // con informarle al teléfono que ya llegó.
+        if (req.FechaRegistroLocal != null && fechaAtencion == req.FechaRegistroLocal.Value)
+        {
+            var idExistente = await _context.AtencionesOdontologia
+                .Where(a => a.PacienteId == req.PacienteId
+                         && a.UsuarioId == UsuarioId
+                         && a.InstitucionId == InstitucionId!.Value
+                         && a.Fecha == fechaAtencion)
+                .Select(a => (int?)a.Id)
+                .FirstOrDefaultAsync();
+
+            // 200 y no 201: no se creó nada, se devuelve la que ya estaba. La app
+            // lo trata igual (mira 2xx + el id) y la marca SINCRONIZADO.
+            if (idExistente != null)
+                return Ok(new { id = idExistente.Value });
+        }
+
         var edad = fechaAtencion.Year - paciente.FechaNacimiento.Year;
         if (paciente.FechaNacimiento.DayOfYear > fechaAtencion.DayOfYear) edad--;
 
