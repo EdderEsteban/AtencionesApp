@@ -28,6 +28,11 @@
         }
 
         renderizar();
+        // El panel de CPO tiene que reflejar los estados que ya vienen cargados.
+        // Al dar de alta una atencion el odontograma se hereda de la visita anterior,
+        // y sin esto los contadores quedaban en cero hasta que el profesional tocaba
+        // alguna superficie, aunque la boca ya tuviera lesiones marcadas.
+        calcularCPO();
         if (wrapEditable) setupInteracciones(wrapEditable);
     }
 
