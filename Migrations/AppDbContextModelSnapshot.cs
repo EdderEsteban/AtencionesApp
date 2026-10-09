@@ -39,6 +39,9 @@ namespace AtencionesApp.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime?>("FechaSincronizacion")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<int>("InstitucionId")
                         .HasColumnType("int");
 
@@ -89,6 +92,9 @@ namespace AtencionesApp.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FechaSincronizacion")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("InstitucionId")
