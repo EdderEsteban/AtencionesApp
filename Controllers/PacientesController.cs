@@ -90,7 +90,7 @@ public class PacientesController : Controller
     {
         ViewBag.ObrasSociales = await _context.ObrasSociales
             .Where(o => !o.IsDeleted)
-            .OrderBy(o => o.Nombre)
+            .OrderBy(o => o.Nombre) 
             .ToListAsync();
 
         if (!ModelState.IsValid)
